@@ -1,0 +1,8 @@
+the issue in this page are , the apparatus already fix for 5 but the dropdown still show no options 
+
+when i createt select gymnast did not show but supposely it must the input and the information must same with in the dashboard
+
+have team name , coach details (options) , fisio details (option) , team name (mandatory) 
+
+the gymnast information  : 
+name , ic , school or team , category , apparatus ,  event
