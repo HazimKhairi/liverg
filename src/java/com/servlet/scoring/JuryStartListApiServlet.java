@@ -168,6 +168,9 @@ public class JuryStartListApiServlet extends HttpServlet {
             startListDAO.addToStartList(eventID, gymnastID, apparatusID, competitionDay, batchNumber);
         }
 
+        // Auto-sort based on the randomization logic (Apparatus -> Category -> Gymnast)
+        startListDAO.randomizeOrderInBatch(eventID, competitionDay, batchNumber);
+
         result.put("success", true);
         result.put("added", gymnastIDs.size());
         return result;
