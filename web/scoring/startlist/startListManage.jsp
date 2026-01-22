@@ -868,6 +868,7 @@
                     function populateCategories() {
                         var categories = [...new Set(gymnasts.map(g => g.category))];
                         var $select = $('#filterCategory');
+                        $select.find('option:gt(0)').remove();
                         categories.forEach(function (cat) {
                             if (cat) {
                                 $select.append('<option value="' + cat + '">' + cat + '</option>');
@@ -878,6 +879,7 @@
                     function populateSchools() {
                         var schools = [...new Set(gymnasts.map(g => g.school))];
                         var $select = $('#filterSchool');
+                        $select.find('option:gt(0)').remove();
                         schools.forEach(function (sch) {
                             if (sch) {
                                 $select.append('<option value="' + sch + '">' + sch + '</option>');
@@ -887,6 +889,7 @@
 
                     function populateApparatus() {
                         var $filter = $('#filterApparatus');
+                        $filter.find('option:gt(0)').remove();
                         apparatus.forEach(function (app) {
                             $filter.append('<option value="' + app.apparatusID + '">' + app.apparatusName + '</option>');
                         });
