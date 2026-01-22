@@ -972,6 +972,7 @@
                                 '<div class="item-name">' + entry.gymnastName + '</div>' +
                                 '<div class="item-details">' +
                                 '<span class="item-apparatus">' + entry.apparatusName + '</span>' +
+                                '<span>' + (entry.category || '') + '</span>' +
                                 '<span>' + entry.teamName + '</span>' +
                                 '<span>Day ' + entry.competitionDay + ' | Batch ' + entry.batchNumber + '</span>' +
                                 '</div>' +

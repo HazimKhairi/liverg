@@ -256,6 +256,13 @@
             text-align: center;
             border: 1px solid var(--border-color);
             transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .score-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
         }
 
         .score-cell.pending { border-style: dashed; border-color: var(--text-muted); color: var(--text-muted); }
@@ -600,21 +607,8 @@
     <div class="main-content">
         <!-- Left Panel -->
         <div class="scoring-panel">
-            <!-- No Session State -->
-            <div id="noSessionSection" class="no-session">
-                <div class="no-session-icon">
-                    <i class="fas fa-gavel"></i>
-                </div>
-                <h2>No Active Session</h2>
-                <p>Start the scoring session to begin evaluating gymnasts</p>
-                <button class="btn-action btn-start" id="btnStartFirst" style="width: auto; padding: 0.75rem 2rem;">
-                    <i class="fas fa-play"></i>
-                    Start Scoring
-                </button>
-            </div>
-
             <!-- Active Session -->
-            <div id="activeSession" style="display: none; flex: 1; display: flex; flex-direction: column;">
+            <div id="activeSession" style="flex: 1; display: flex; flex-direction: column;">
                 <!-- Current Gymnast -->
                 <div class="gymnast-card">
                     <div class="gymnast-order" id="gymnastOrder">#1</div>
@@ -687,11 +681,15 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <button class="btn-action btn-force" id="btnForceSubmit" disabled>
+                    <button class="btn-action btn-start" id="btnStartFirst">
+                        <i class="fas fa-play"></i>
+                        Start Scoring
+                    </button>
+                    <button class="btn-action btn-force" id="btnForceSubmit" style="display: none;">
                         <i class="fas fa-check-double"></i>
                         Force Submit
                     </button>
-                    <button class="btn-action btn-advance" id="btnAdvance" disabled>
+                    <button class="btn-action btn-advance" id="btnAdvance" style="display: none;">
                         <i class="fas fa-forward"></i>
                         Next Gymnast
                     </button>
@@ -751,55 +749,127 @@
         </div>
     </div>
 
+    <!-- Score Input Modal -->
+    <div class="modal fade" id="scoreInputModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scoreModalTitle">Enter Score</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="scoreModalPositionCode">
+                    <div class="mb-3">
+                        <label for="scoreInputValue" class="form-label text-muted small" id="scoreModalLabel">Score Value (0.00 - 10.00)</label>
+                        <input type="number" class="form-control form-control-lg text-center fw-bold" id="scoreInputValue" step="0.001" min="0" max="10" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveScore">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function() {
-            var urlParams = new URLSearchParams(window.location.search);
-            var eventID = urlParams.get('eventID');
-            var filterDay = urlParams.get('day');
-            var filterBatch = urlParams.get('batch');
-            var filterCategory = urlParams.get('category');
-            var filterSchool = urlParams.get('school');
-            var filterApparatus = urlParams.get('apparatusID');
+        var scoreModal;
 
-            if (!eventID) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No event ID provided'
+            $(document).ready(function() {
+                scoreModal = new bootstrap.Modal(document.getElementById('scoreInputModal'));
+
+                var urlParams = new URLSearchParams(window.location.search);
+                var eventID = urlParams.get('eventID');
+                var filterDay = urlParams.get('day');
+                var filterBatch = urlParams.get('batch');
+                var filterCategory = urlParams.get('category');
+                var filterSchool = urlParams.get('school');
+                var filterApparatus = urlParams.get('apparatusID');
+
+                if (!eventID) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No event ID provided'
+                    });
+                    return;
+                }
+
+                var currentSessionID = null;
+                var pollInterval = null;
+
+                // Simplified positions: DB, DA, A1-A4, E1-E4
+                var positions = [
+                    { positionCode: 'DB1', positionName: 'Difficulty Body', category: 'DB', panelNumber: 1 },
+                    { positionCode: 'DA1', positionName: 'Difficulty Apparatus', category: 'DA', panelNumber: 1 },
+                    { positionCode: 'A1', positionName: 'Artistic 1', category: 'A', panelNumber: 1 },
+                    { positionCode: 'A2', positionName: 'Artistic 2', category: 'A', panelNumber: 1 },
+                    { positionCode: 'A3', positionName: 'Artistic 3', category: 'A', panelNumber: 1 },
+                    { positionCode: 'A4', positionName: 'Artistic 4', category: 'A', panelNumber: 1 },
+                    { positionCode: 'E1', positionName: 'Execution 1', category: 'E', panelNumber: 1 },
+                    { positionCode: 'E2', positionName: 'Execution 2', category: 'E', panelNumber: 1 },
+                    { positionCode: 'E3', positionName: 'Execution 3', category: 'E', panelNumber: 1 },
+                    { positionCode: 'E4', positionName: 'Execution 4', category: 'E', panelNumber: 1 }
+                ];
+
+                // Set up quick links
+                $('#linkTechBackend').attr('href', '../backend/techBackend.jsp?eventID=' + eventID);
+                $('#linkStartList').attr('href', '../startlist/startListManage.jsp?eventID=' + eventID);
+
+                // Initialize grids
+                initScoreGrids();
+
+                // Load event info
+                loadEventInfo();
+                loadStartList();
+                startPolling();
+
+                // Modal Save Button
+                $('#btnSaveScore').click(function() {
+                    var code = $('#scoreModalPositionCode').val();
+                    var valStr = $('#scoreInputValue').val();
+                    
+                    if (!valStr) {
+                         Swal.fire({
+                            icon: 'warning',
+                            title: 'Invalid Input',
+                            text: 'Please enter a score value'
+                        });
+                        return;
+                    }
+                    
+                    var val = parseFloat(valStr);
+                    if (isNaN(val)) {
+                         Swal.fire({
+                            icon: 'warning',
+                            title: 'Invalid Number',
+                            text: 'Please enter a valid numeric score'
+                        });
+                        return;
+                    }
+                    
+                    if (val < 0 || val > 10) {
+                         Swal.fire({
+                            icon: 'warning',
+                            title: 'Out of Range',
+                            text: 'Score must be between 0.00 and 10.00'
+                        });
+                        return;
+                    }
+
+                    submitScore(code, val);
+                    scoreModal.hide();
                 });
-                return;
-            }
-
-            var currentSessionID = null;
-            var pollInterval = null;
-
-            // Simplified positions: DB, DA, A1-A4, E1-E4
-            var positions = [
-                { positionCode: 'DB', positionName: 'Difficulty Body', category: 'DB', panelNumber: 1 },
-                { positionCode: 'DA', positionName: 'Difficulty Apparatus', category: 'DA', panelNumber: 1 },
-                { positionCode: 'A1', positionName: 'Artistic 1', category: 'A', panelNumber: 1 },
-                { positionCode: 'A2', positionName: 'Artistic 2', category: 'A', panelNumber: 1 },
-                { positionCode: 'A3', positionName: 'Artistic 3', category: 'A', panelNumber: 1 },
-                { positionCode: 'A4', positionName: 'Artistic 4', category: 'A', panelNumber: 1 },
-                { positionCode: 'E1', positionName: 'Execution 1', category: 'E', panelNumber: 1 },
-                { positionCode: 'E2', positionName: 'Execution 2', category: 'E', panelNumber: 1 },
-                { positionCode: 'E3', positionName: 'Execution 3', category: 'E', panelNumber: 1 },
-                { positionCode: 'E4', positionName: 'Execution 4', category: 'E', panelNumber: 1 }
-            ];
-
-            // Set up quick links
-            $('#linkTechBackend').attr('href', '../backend/techBackend.jsp?eventID=' + eventID);
-            $('#linkStartList').attr('href', '../startlist/startListManage.jsp?eventID=' + eventID);
-
-            // Initialize grids
-            initScoreGrids();
-
-            // Load event info
-            loadEventInfo();
-            loadStartList();
-            startPolling();
+                
+                // Modal Enter Key
+                $('#scoreInputValue').on('keypress', function(e) {
+                    if (e.which == 13) {
+                        $('#btnSaveScore').click();
+                    }
+                });
 
             function initScoreGrids() {
                 var diffGrid = $('#difficultyGrid');
@@ -808,9 +878,10 @@
 
                 positions.forEach(function(pos) {
                     var catClass = 'cat-' + pos.category.toLowerCase();
-                    var cell = '<div class="score-cell pending ' + catClass + '" data-code="' + pos.positionCode + '">' +
+                    var cell = '<div class="score-cell pending ' + catClass + '" data-code="' + pos.positionCode + '" data-name="' + pos.positionName + '" tabindex="0" role="button">' +
                         '<div class="code">' + pos.positionCode + '</div>' +
-                        '<div class="value">-</div></div>';
+                        '<div class="value">-</div>' +
+                        '</div>';
 
                     if (pos.category === 'DB' || pos.category === 'DA') {
                         diffGrid.append(cell);
@@ -818,6 +889,64 @@
                         artGrid.append(cell);
                     } else if (pos.category === 'E') {
                         exeGrid.append(cell);
+                    }
+                });
+
+                // Add click listener for cells
+                $('.score-cell').click(function() {
+                    // Check if scoring is allowed
+                    if (!$('#statusPill').hasClass('scoring')) return;
+                    
+                    var $cell = $(this);
+                    var code = $cell.data('code');
+                    var name = $cell.data('name');
+                    var currentVal = $cell.find('.value').text();
+                    
+                    $('#scoreModalTitle').text(name + ' (' + code + ')');
+                    $('#scoreModalPositionCode').val(code);
+                    $('#scoreInputValue').val(currentVal === '-' ? '' : currentVal);
+                    
+                    scoreModal.show();
+                    
+                    // Focus input after modal is shown
+                    setTimeout(function() {
+                        $('#scoreInputValue').focus();
+                    }, 500);
+                });
+            }
+
+            function submitScore(positionCode, scoreValue) {
+                if (!currentSessionID) return;
+
+                $.ajax({
+                    type: 'POST',
+                    url: '../../api/jury/session',
+                    data: { 
+                        action: 'submitScore', 
+                        eventID: eventID,
+                        sessionID: currentSessionID,
+                        positionCode: positionCode,
+                        scoreValue: scoreValue
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // Visual feedback handled by polling, but we can do immediate feedback
+                            var $cell = $('.score-cell[data-code="' + positionCode + '"]');
+                            $cell.removeClass('pending').addClass('submitted');
+                            
+                            if (response.allSubmitted) {
+                                pollSessionState(); // Refresh to show finalize buttons if needed
+                            }
+                        } else {
+                            // Show error only if it's a real error, not just a race condition
+                            console.error('Submit failed:', response.error, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Submission Failed',
+                                text: response.error || 'Unknown error occurred'
+                            });
+                        }
                     }
                 });
             }
@@ -907,44 +1036,48 @@
             function handleSessionState(data) {
                 var status = data.sessionStatus;
 
-                if (status === 'NO_SESSION') {
-                    $('#noSessionSection').show();
-                    $('#activeSession').hide();
-                    currentSessionID = null;
+                currentSessionID = data.sessionID || null;
+
+                // Update gymnast info
+                $('#gymnastOrder').text(data.startOrder ? '#' + data.startOrder : '-');
+                $('#gymnastName').text(data.gymnastName || '-');
+                $('#teamName').text(data.teamName || '-');
+                $('#apparatusName').text(data.apparatusName || '-');
+
+                // Update status
+                updateStatusDisplay(status);
+
+                // Update score cells
+                updateScoreCells(data.scores || [], data.submittedPositions || []);
+
+                // Update progress
+                var submitted = (data.submittedPositions || []).length;
+                var total = positions.length;
+                $('#submittedCount').text(submitted + ' / ' + total);
+                $('#progressBar').css('width', (total > 0 ? submitted / total * 100 : 0) + '%');
+
+                // Update final score
+                if (data.finalScore) {
+                    $('#scoreD').text(data.finalScore.scoreDTotal ? data.finalScore.scoreDTotal.toFixed(3) : '-');
+                    $('#scoreA').text(data.finalScore.scoreArtistic ? data.finalScore.scoreArtistic.toFixed(3) : '-');
+                    $('#scoreE').text(data.finalScore.scoreExecution ? data.finalScore.scoreExecution.toFixed(3) : '-');
+                    var pen = (data.finalScore.technicalDeduction || 0) + (data.finalScore.lineDeduction || 0) + (data.finalScore.timeDeduction || 0);
+                    $('#scorePenalty').text(pen > 0 ? '-' + pen.toFixed(3) : '0.00');
+                    $('#scoreFinal').text(data.finalScore.finalScore ? data.finalScore.finalScore.toFixed(3) : '-');
                 } else {
-                    $('#noSessionSection').hide();
-                    $('#activeSession').show().css('display', 'flex');
-                    currentSessionID = data.sessionID;
+                    $('#scoreD, #scoreA, #scoreE, #scorePenalty, #scoreFinal').text('-');
+                }
 
-                    // Update gymnast info
-                    $('#gymnastOrder').text('#' + (data.startOrder || 1));
-                    $('#gymnastName').text(data.gymnastName || '-');
-                    $('#teamName').text(data.teamName || '-');
-                    $('#apparatusName').text(data.apparatusName || '-');
+                // Update buttons
+                if (status === 'NO_SESSION') {
+                    $('#btnStartFirst').show();
+                    $('#btnForceSubmit').hide();
+                    $('#btnAdvance').hide();
+                } else {
+                    $('#btnStartFirst').hide();
+                    $('#btnForceSubmit').show();
+                    $('#btnAdvance').show();
 
-                    // Update status
-                    updateStatusDisplay(status);
-
-                    // Update score cells
-                    updateScoreCells(data.scores || [], data.submittedPositions || []);
-
-                    // Update progress
-                    var submitted = (data.submittedPositions || []).length;
-                    var total = positions.length;
-                    $('#submittedCount').text(submitted + ' / ' + total);
-                    $('#progressBar').css('width', (submitted / total * 100) + '%');
-
-                    // Update final score
-                    if (data.finalScore) {
-                        $('#scoreD').text(data.finalScore.scoreDTotal ? data.finalScore.scoreDTotal.toFixed(3) : '-');
-                        $('#scoreA').text(data.finalScore.scoreArtistic ? data.finalScore.scoreArtistic.toFixed(3) : '-');
-                        $('#scoreE').text(data.finalScore.scoreExecution ? data.finalScore.scoreExecution.toFixed(3) : '-');
-                        var pen = (data.finalScore.technicalDeduction || 0) + (data.finalScore.lineDeduction || 0) + (data.finalScore.timeDeduction || 0);
-                        $('#scorePenalty').text(pen > 0 ? '-' + pen.toFixed(3) : '0.000');
-                        $('#scoreFinal').text(data.finalScore.finalScore ? data.finalScore.finalScore.toFixed(3) : '-');
-                    }
-
-                    // Update buttons
                     var allSubmitted = submitted === total && total > 0;
                     $('#btnForceSubmit').prop('disabled', allSubmitted || status !== 'SCORING');
                     $('#btnAdvance').prop('disabled', status !== 'SUBMITTED' && status !== 'FINALIZED');
@@ -969,6 +1102,9 @@
                     $pill.addClass('submitted');
                     $text.text('Submitted');
                     $sessionStatus.addClass('active').text('Submitted');
+                } else if (status === 'NO_SESSION') {
+                    $text.text('Ready');
+                    $sessionStatus.text('Ready to Start');
                 } else {
                     $text.text(status);
                     $sessionStatus.text(status);
@@ -1003,10 +1139,17 @@
                 var $btn = $(this);
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Starting...');
 
+                var data = { action: 'startScoring', eventID: eventID };
+                if (filterDay) data.day = filterDay;
+                if (filterBatch) data.batch = filterBatch;
+                if (filterCategory) data.category = filterCategory;
+                if (filterSchool) data.school = filterSchool;
+                if (filterApparatus) data.apparatusID = filterApparatus;
+
                 $.ajax({
                     type: 'POST',
                     url: '../../api/jury/session',
-                    data: { action: 'startScoring', eventID: eventID },
+                    data: data,
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
@@ -1043,10 +1186,17 @@
                 var $btn = $(this);
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Advancing...');
 
+                var data = { action: 'advanceGymnast', eventID: eventID };
+                if (filterDay) data.day = filterDay;
+                if (filterBatch) data.batch = filterBatch;
+                if (filterCategory) data.category = filterCategory;
+                if (filterSchool) data.school = filterSchool;
+                if (filterApparatus) data.apparatusID = filterApparatus;
+
                 $.ajax({
                     type: 'POST',
                     url: '../../api/jury/session',
-                    data: { action: 'advanceGymnast', eventID: eventID },
+                    data: data,
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {

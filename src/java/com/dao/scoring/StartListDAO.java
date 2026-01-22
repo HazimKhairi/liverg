@@ -241,19 +241,46 @@ public class StartListDAO {
         }
     }
 
-    public StartListEntry getNextUnscored(int eventID) {
-        String sql = "SELECT sl.*, g.gymnastName, g.gymnastCategory, t.teamName, a.apparatusName, g.teamID " +
-                "FROM START_LIST sl " +
-                "JOIN GYMNAST g ON sl.gymnastID = g.gymnastID " +
-                "JOIN TEAM t ON g.teamID = t.teamID " +
-                "JOIN APPARATUS a ON sl.apparatusID = a.apparatusID " +
-                "LEFT JOIN JURY_SESSION js ON sl.startListID = js.startListID AND js.sessionStatus = 'FINALIZED' " +
-                "WHERE sl.eventID = ? AND js.sessionID IS NULL " +
-                "ORDER BY sl.competitionDay, sl.batchNumber, sl.startOrder " +
-                "LIMIT 1";
+    public StartListEntry getNextUnscored(int eventID, int day, int batch, int apparatusID, String category,
+            String school) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT sl.*, g.gymnastName, g.gymnastCategory, t.teamName, a.apparatusName, g.teamID ");
+        sql.append("FROM START_LIST sl ");
+        sql.append("JOIN GYMNAST g ON sl.gymnastID = g.gymnastID ");
+        sql.append("JOIN TEAM t ON g.teamID = t.teamID ");
+        sql.append("JOIN APPARATUS a ON sl.apparatusID = a.apparatusID ");
+        sql.append("LEFT JOIN JURY_SESSION js ON sl.startListID = js.startListID AND js.sessionStatus = 'FINALIZED' ");
+        sql.append("WHERE sl.eventID = ? AND js.sessionID IS NULL ");
 
-        try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setInt(1, eventID);
+        if (day > 0)
+            sql.append("AND sl.competitionDay = ? ");
+        if (batch > 0)
+            sql.append("AND sl.batchNumber = ? ");
+        if (apparatusID > 0)
+            sql.append("AND sl.apparatusID = ? ");
+        if (category != null && !category.isEmpty())
+            sql.append("AND g.gymnastCategory = ? ");
+        if (school != null && !school.isEmpty())
+            sql.append("AND g.gymnastSchool = ? ");
+
+        sql.append("ORDER BY sl.competitionDay, sl.batchNumber, sl.startOrder ");
+        sql.append("LIMIT 1");
+
+        try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            pst.setInt(paramIndex++, eventID);
+
+            if (day > 0)
+                pst.setInt(paramIndex++, day);
+            if (batch > 0)
+                pst.setInt(paramIndex++, batch);
+            if (apparatusID > 0)
+                pst.setInt(paramIndex++, apparatusID);
+            if (category != null && !category.isEmpty())
+                pst.setString(paramIndex++, category);
+            if (school != null && !school.isEmpty())
+                pst.setString(paramIndex++, school);
+
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
                 return extractEntryFromResultSet(rs);
@@ -262,6 +289,10 @@ public class StartListDAO {
             printSQLException(e);
         }
         return null;
+    }
+
+    public StartListEntry getNextUnscored(int eventID) {
+        return getNextUnscored(eventID, 0, 0, 0, null, null);
     }
 
     private StartListEntry extractEntryFromResultSet(ResultSet rs) throws SQLException {

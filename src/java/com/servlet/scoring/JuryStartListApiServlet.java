@@ -64,6 +64,7 @@ public class JuryStartListApiServlet extends HttpServlet {
                 obj.put("startListID", entry.getStartListID());
                 obj.put("gymnastID", entry.getGymnastID());
                 obj.put("gymnastName", entry.getGymnastName());
+                obj.put("category", entry.getGymnastCategory());
                 obj.put("teamName", entry.getTeamName());
                 obj.put("apparatusID", entry.getApparatusID());
                 obj.put("apparatusName", entry.getApparatusName());

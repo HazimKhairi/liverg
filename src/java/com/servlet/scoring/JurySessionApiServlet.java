@@ -1,10 +1,12 @@
 package com.servlet.scoring;
 
 import com.dao.scoring.FinalScoreDAO;
+import com.dao.scoring.JudgePositionTypeDAO;
 import com.dao.scoring.JuryScoreDAO;
 import com.dao.scoring.JurySessionDAO;
 import com.dao.scoring.StartListDAO;
 import com.scoring.bean.FinalScore;
+import com.scoring.bean.JudgePositionType;
 import com.scoring.bean.JuryScore;
 import com.scoring.bean.JurySession;
 import jakarta.servlet.ServletException;
@@ -129,9 +131,31 @@ public class JurySessionApiServlet extends HttpServlet {
         try {
             int eventID = Integer.parseInt(request.getParameter("eventID"));
 
+            int day = 0;
+            int batch = 0;
+            int apparatusID = 0;
+            String category = request.getParameter("category");
+            String school = request.getParameter("school");
+
+            try {
+                if (request.getParameter("day") != null)
+                    day = Integer.parseInt(request.getParameter("day"));
+            } catch (Exception e) {
+            }
+            try {
+                if (request.getParameter("batch") != null)
+                    batch = Integer.parseInt(request.getParameter("batch"));
+            } catch (Exception e) {
+            }
+            try {
+                if (request.getParameter("apparatusID") != null)
+                    apparatusID = Integer.parseInt(request.getParameter("apparatusID"));
+            } catch (Exception e) {
+            }
+
             switch (action) {
                 case "startScoring":
-                    result = handleStartScoring(eventID);
+                    result = handleStartScoring(eventID, day, batch, apparatusID, category, school);
                     break;
 
                 case "submitScore":
@@ -142,7 +166,7 @@ public class JurySessionApiServlet extends HttpServlet {
                     break;
 
                 case "advanceGymnast":
-                    result = handleAdvanceGymnast(eventID);
+                    result = handleAdvanceGymnast(eventID, day, batch, apparatusID, category, school);
                     break;
 
                 case "overrideScore":
@@ -172,19 +196,15 @@ public class JurySessionApiServlet extends HttpServlet {
         }
     }
 
-    private JSONObject handleStartScoring(int eventID) {
+    private JSONObject handleStartScoring(int eventID, int day, int batch, int apparatusID, String category,
+            String school) {
         JSONObject result = new JSONObject();
 
-        JurySession session = sessionDAO.createOrGetCurrentSession(eventID);
+        JurySession session = sessionDAO.createOrGetCurrentSession(eventID, day, batch, apparatusID, category, school);
         if (session == null) {
-            var nextEntry = startListDAO.getNextUnscored(eventID);
-            if (nextEntry == null) {
-                result.put("success", false);
-                result.put("error", "No gymnasts in start list");
-                return result;
-            }
-            int sessionID = sessionDAO.createSession(eventID, nextEntry.getStartListID());
-            session = sessionDAO.getSessionById(sessionID);
+            result.put("success", false);
+            result.put("error", "No gymnasts in start list matching criteria");
+            return result;
         }
 
         if (session.isWaiting()) {
@@ -212,7 +232,16 @@ public class JurySessionApiServlet extends HttpServlet {
             return result;
         }
 
-        int scoreResult = scoreDAO.submitScoreByPositionCode(sessionID, positionCode, scoreValue);
+        JudgePositionTypeDAO positionDAO = new JudgePositionTypeDAO();
+        JudgePositionType position = positionDAO.getPositionByCode(positionCode);
+
+        if (position == null) {
+            result.put("success", false);
+            result.put("error", "Invalid position code: " + positionCode);
+            return result;
+        }
+
+        int scoreResult = scoreDAO.submitScore(sessionID, position.getPositionTypeID(), scoreValue);
         if (scoreResult > 0) {
             result.put("success", true);
             result.put("positionCode", positionCode);
@@ -228,17 +257,49 @@ public class JurySessionApiServlet extends HttpServlet {
                     result.put("finalScore", finalScore.getFinalScore());
                 }
             } else {
-                result.put("allSubmitted", false);
+                // Auto-fill ALL missing positions that are not the main judge panel (DB, DA, A,
+                // E)
+                // This handles LINE, TIME, RJ, TV, AV, AVB, EXE, etc.
+                List<String> pendingCodes = scoreDAO.getPendingPositions(sessionID, eventID);
+                boolean autoFilled = false;
+                for (String code : pendingCodes) {
+                    JudgePositionType pos = positionDAO.getPositionByCode(code);
+                    if (pos != null) {
+                        String cat = pos.getCategory();
+                        // If it's NOT a main category, auto-fill it with 0.0
+                        if (!"DB".equals(cat) && !"DA".equals(cat) && !"A".equals(cat) && !"E".equals(cat)) {
+                            scoreDAO.submitScore(sessionID, pos.getPositionTypeID(), 0.0);
+                            autoFilled = true;
+                        }
+                    }
+                }
+
+                if (autoFilled && scoreDAO.areAllScoresSubmitted(sessionID, eventID)) {
+                    sessionDAO.submitSession(sessionID);
+                    finalScoreDAO.calculateAndSaveFinalScore(sessionID);
+                    result.put("allSubmitted", true);
+
+                    FinalScore finalScore = finalScoreDAO.getFinalScoreBySession(sessionID);
+                    if (finalScore != null) {
+                        result.put("finalScore", finalScore.getFinalScore());
+                    }
+                } else {
+                    result.put("allSubmitted", false);
+                    JSONArray pendingArray = new JSONArray();
+                    pendingArray.addAll(pendingCodes);
+                    result.put("pendingPositions", pendingArray);
+                }
             }
         } else {
             result.put("success", false);
-            result.put("error", "Failed to submit score");
+            result.put("error", "Failed to submit score to database (Result: " + scoreResult + ")");
         }
 
         return result;
     }
 
-    private JSONObject handleAdvanceGymnast(int eventID) {
+    private JSONObject handleAdvanceGymnast(int eventID, int day, int batch, int apparatusID, String category,
+            String school) {
         JSONObject result = new JSONObject();
 
         JurySession current = sessionDAO.getCurrentSession(eventID);
@@ -246,7 +307,7 @@ public class JurySessionApiServlet extends HttpServlet {
             sessionDAO.finalizeSession(current.getSessionID());
         }
 
-        boolean advanced = sessionDAO.advanceToNextGymnast(eventID);
+        boolean advanced = sessionDAO.advanceToNextGymnast(eventID, day, batch, apparatusID, category, school);
         if (advanced) {
             JurySession newSession = sessionDAO.getCurrentSession(eventID);
             if (newSession != null) {
@@ -268,7 +329,8 @@ public class JurySessionApiServlet extends HttpServlet {
         return result;
     }
 
-    private JSONObject handleOverrideScore(int sessionID, String positionCode, double newScore, int staffID, String reason) {
+    private JSONObject handleOverrideScore(int sessionID, String positionCode, double newScore, int staffID,
+            String reason) {
         JSONObject result = new JSONObject();
 
         var position = new com.dao.scoring.JudgePositionTypeDAO().getPositionByCode(positionCode);

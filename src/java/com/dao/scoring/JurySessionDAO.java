@@ -16,17 +16,48 @@ public class JurySessionDAO {
     DBConnect db = new DBConnect();
 
     public JurySession getCurrentSession(int eventID) {
-        String sql = "SELECT js.*, g.gymnastName, a.apparatusName, t.teamName, sl.gymnastID, sl.apparatusID " +
-                     "FROM JURY_SESSION js " +
-                     "JOIN START_LIST sl ON js.startListID = sl.startListID " +
-                     "JOIN GYMNAST g ON sl.gymnastID = g.gymnastID " +
-                     "JOIN APPARATUS a ON sl.apparatusID = a.apparatusID " +
-                     "JOIN TEAM t ON g.teamID = t.teamID " +
-                     "WHERE js.eventID = ? AND js.sessionStatus IN ('WAITING', 'SCORING', 'SUBMITTED') " +
-                     "ORDER BY js.createdAt DESC LIMIT 1";
+        return getCurrentSession(eventID, 0, 0, 0, null, null);
+    }
 
-        try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setInt(1, eventID);
+    public JurySession getCurrentSession(int eventID, int day, int batch, int apparatusID, String category,
+            String school) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT js.*, g.gymnastName, a.apparatusName, t.teamName, sl.gymnastID, sl.apparatusID ");
+        sql.append("FROM JURY_SESSION js ");
+        sql.append("JOIN START_LIST sl ON js.startListID = sl.startListID ");
+        sql.append("JOIN GYMNAST g ON sl.gymnastID = g.gymnastID ");
+        sql.append("JOIN APPARATUS a ON sl.apparatusID = a.apparatusID ");
+        sql.append("JOIN TEAM t ON g.teamID = t.teamID ");
+        sql.append("WHERE js.eventID = ? AND js.sessionStatus IN ('WAITING', 'SCORING', 'SUBMITTED') ");
+
+        if (day > 0)
+            sql.append("AND sl.competitionDay = ? ");
+        if (batch > 0)
+            sql.append("AND sl.batchNumber = ? ");
+        if (apparatusID > 0)
+            sql.append("AND sl.apparatusID = ? ");
+        if (category != null && !category.isEmpty())
+            sql.append("AND g.gymnastCategory = ? ");
+        if (school != null && !school.isEmpty())
+            sql.append("AND g.gymnastSchool = ? ");
+
+        sql.append("ORDER BY js.createdAt DESC LIMIT 1");
+
+        try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            pst.setInt(paramIndex++, eventID);
+
+            if (day > 0)
+                pst.setInt(paramIndex++, day);
+            if (batch > 0)
+                pst.setInt(paramIndex++, batch);
+            if (apparatusID > 0)
+                pst.setInt(paramIndex++, apparatusID);
+            if (category != null && !category.isEmpty())
+                pst.setString(paramIndex++, category);
+            if (school != null && !school.isEmpty())
+                pst.setString(paramIndex++, school);
+
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
                 return extractSessionFromResultSet(rs);
@@ -39,12 +70,12 @@ public class JurySessionDAO {
 
     public JurySession getSessionById(int sessionID) {
         String sql = "SELECT js.*, g.gymnastName, a.apparatusName, t.teamName, sl.gymnastID, sl.apparatusID " +
-                     "FROM JURY_SESSION js " +
-                     "JOIN START_LIST sl ON js.startListID = sl.startListID " +
-                     "JOIN GYMNAST g ON sl.gymnastID = g.gymnastID " +
-                     "JOIN APPARATUS a ON sl.apparatusID = a.apparatusID " +
-                     "JOIN TEAM t ON g.teamID = t.teamID " +
-                     "WHERE js.sessionID = ?";
+                "FROM JURY_SESSION js " +
+                "JOIN START_LIST sl ON js.startListID = sl.startListID " +
+                "JOIN GYMNAST g ON sl.gymnastID = g.gymnastID " +
+                "JOIN APPARATUS a ON sl.apparatusID = a.apparatusID " +
+                "JOIN TEAM t ON g.teamID = t.teamID " +
+                "WHERE js.sessionID = ?";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, sessionID);
@@ -61,13 +92,13 @@ public class JurySessionDAO {
     public List<JurySession> getSessionsByEvent(int eventID) {
         List<JurySession> sessions = new ArrayList<>();
         String sql = "SELECT js.*, g.gymnastName, a.apparatusName, t.teamName, sl.gymnastID, sl.apparatusID " +
-                     "FROM JURY_SESSION js " +
-                     "JOIN START_LIST sl ON js.startListID = sl.startListID " +
-                     "JOIN GYMNAST g ON sl.gymnastID = g.gymnastID " +
-                     "JOIN APPARATUS a ON sl.apparatusID = a.apparatusID " +
-                     "JOIN TEAM t ON g.teamID = t.teamID " +
-                     "WHERE js.eventID = ? " +
-                     "ORDER BY js.createdAt DESC";
+                "FROM JURY_SESSION js " +
+                "JOIN START_LIST sl ON js.startListID = sl.startListID " +
+                "JOIN GYMNAST g ON sl.gymnastID = g.gymnastID " +
+                "JOIN APPARATUS a ON sl.apparatusID = a.apparatusID " +
+                "JOIN TEAM t ON g.teamID = t.teamID " +
+                "WHERE js.eventID = ? " +
+                "ORDER BY js.createdAt DESC";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, eventID);
@@ -84,7 +115,8 @@ public class JurySessionDAO {
     public int createSession(int eventID, int startListID) {
         String sql = "INSERT INTO JURY_SESSION (eventID, startListID, sessionStatus) VALUES (?, ?, 'WAITING')";
 
-        try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = db.getConnection();
+                PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pst.setInt(1, eventID);
             pst.setInt(2, startListID);
             pst.executeUpdate();
@@ -141,13 +173,18 @@ public class JurySessionDAO {
     }
 
     public JurySession createOrGetCurrentSession(int eventID) {
-        JurySession current = getCurrentSession(eventID);
+        return createOrGetCurrentSession(eventID, 0, 0, 0, null, null);
+    }
+
+    public JurySession createOrGetCurrentSession(int eventID, int day, int batch, int apparatusID, String category,
+            String school) {
+        JurySession current = getCurrentSession(eventID, day, batch, apparatusID, category, school);
         if (current != null) {
             return current;
         }
 
         StartListDAO startListDAO = new StartListDAO();
-        var nextEntry = startListDAO.getNextUnscored(eventID);
+        var nextEntry = startListDAO.getNextUnscored(eventID, day, batch, apparatusID, category, school);
         if (nextEntry != null) {
             int sessionID = createSession(eventID, nextEntry.getStartListID());
             return getSessionById(sessionID);
@@ -157,13 +194,18 @@ public class JurySessionDAO {
     }
 
     public boolean advanceToNextGymnast(int eventID) {
-        JurySession current = getCurrentSession(eventID);
+        return advanceToNextGymnast(eventID, 0, 0, 0, null, null);
+    }
+
+    public boolean advanceToNextGymnast(int eventID, int day, int batch, int apparatusID, String category,
+            String school) {
+        JurySession current = getCurrentSession(eventID, day, batch, apparatusID, category, school);
         if (current != null && !current.isFinalized()) {
             finalizeSession(current.getSessionID());
         }
 
         StartListDAO startListDAO = new StartListDAO();
-        var nextEntry = startListDAO.getNextUnscored(eventID);
+        var nextEntry = startListDAO.getNextUnscored(eventID, day, batch, apparatusID, category, school);
         if (nextEntry != null) {
             int newSessionID = createSession(eventID, nextEntry.getStartListID());
             return newSessionID > 0;

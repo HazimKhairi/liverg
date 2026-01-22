@@ -18,10 +18,10 @@ public class JuryScoreDAO {
     public List<JuryScore> getScoresBySession(int sessionID) {
         List<JuryScore> scores = new ArrayList<>();
         String sql = "SELECT js.*, jpt.positionCode, jpt.positionName, jpt.category " +
-                     "FROM JURY_SCORE js " +
-                     "JOIN JUDGE_POSITION_TYPE jpt ON js.positionTypeID = jpt.positionTypeID " +
-                     "WHERE js.sessionID = ? " +
-                     "ORDER BY jpt.displayOrder";
+                "FROM JURY_SCORE js " +
+                "JOIN JUDGE_POSITION_TYPE jpt ON js.positionTypeID = jpt.positionTypeID " +
+                "WHERE js.sessionID = ? " +
+                "ORDER BY jpt.displayOrder";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, sessionID);
@@ -38,10 +38,10 @@ public class JuryScoreDAO {
     public List<JuryScore> getScoresBySessionAndCategory(int sessionID, String category) {
         List<JuryScore> scores = new ArrayList<>();
         String sql = "SELECT js.*, jpt.positionCode, jpt.positionName, jpt.category " +
-                     "FROM JURY_SCORE js " +
-                     "JOIN JUDGE_POSITION_TYPE jpt ON js.positionTypeID = jpt.positionTypeID " +
-                     "WHERE js.sessionID = ? AND jpt.category = ? " +
-                     "ORDER BY jpt.displayOrder";
+                "FROM JURY_SCORE js " +
+                "JOIN JUDGE_POSITION_TYPE jpt ON js.positionTypeID = jpt.positionTypeID " +
+                "WHERE js.sessionID = ? AND jpt.category = ? " +
+                "ORDER BY jpt.displayOrder";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, sessionID);
@@ -58,9 +58,9 @@ public class JuryScoreDAO {
 
     public JuryScore getScoreByPositionCode(int sessionID, String positionCode) {
         String sql = "SELECT js.*, jpt.positionCode, jpt.positionName, jpt.category " +
-                     "FROM JURY_SCORE js " +
-                     "JOIN JUDGE_POSITION_TYPE jpt ON js.positionTypeID = jpt.positionTypeID " +
-                     "WHERE js.sessionID = ? AND jpt.positionCode = ?";
+                "FROM JURY_SCORE js " +
+                "JOIN JUDGE_POSITION_TYPE jpt ON js.positionTypeID = jpt.positionTypeID " +
+                "WHERE js.sessionID = ? AND jpt.positionCode = ?";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, sessionID);
@@ -77,23 +77,29 @@ public class JuryScoreDAO {
 
     public int submitScore(int sessionID, int positionTypeID, double scoreValue) {
         String sql = "INSERT INTO JURY_SCORE (sessionID, positionTypeID, scoreValue, submittedAt) " +
-                     "VALUES (?, ?, ?, ?) " +
-                     "ON DUPLICATE KEY UPDATE scoreValue = ?, submittedAt = ?, isOverridden = 0";
+                "VALUES (?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE scoreValue = ?, submittedAt = ?, isOverridden = 0";
 
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
-        try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = db.getConnection();
+                PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pst.setInt(1, sessionID);
             pst.setInt(2, positionTypeID);
             pst.setDouble(3, scoreValue);
             pst.setTimestamp(4, now);
             pst.setDouble(5, scoreValue);
             pst.setTimestamp(6, now);
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
 
-            ResultSet rs = pst.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getInt(1);
+            if (rows >= 0) {
+                ResultSet rs = pst.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+                // Return row count, or 1 if rows is 0 (update with same values) to indicate
+                // success
+                return rows == 0 ? 1 : rows;
             }
         } catch (SQLException e) {
             printSQLException(e);
@@ -112,8 +118,8 @@ public class JuryScoreDAO {
 
     public void overrideScore(int sessionID, int positionTypeID, double newScore, int staffID, String reason) {
         String sql = "UPDATE JURY_SCORE SET scoreValue = ?, isOverridden = 1, overriddenBy = ?, " +
-                     "overrideReason = ?, updatedAt = ? " +
-                     "WHERE sessionID = ? AND positionTypeID = ?";
+                "overrideReason = ?, updatedAt = ? " +
+                "WHERE sessionID = ? AND positionTypeID = ?";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setDouble(1, newScore);
@@ -167,10 +173,10 @@ public class JuryScoreDAO {
     public List<String> getPendingPositions(int sessionID, int eventID) {
         List<String> pending = new ArrayList<>();
         String sql = "SELECT jpt.positionCode FROM EVENT_JUDGE_CONFIG ejc " +
-                     "JOIN JUDGE_POSITION_TYPE jpt ON ejc.positionTypeID = jpt.positionTypeID " +
-                     "LEFT JOIN JURY_SCORE js ON ejc.positionTypeID = js.positionTypeID AND js.sessionID = ? " +
-                     "WHERE ejc.eventID = ? AND ejc.isActive = 1 AND js.scoreValue IS NULL " +
-                     "ORDER BY jpt.displayOrder";
+                "JOIN JUDGE_POSITION_TYPE jpt ON ejc.positionTypeID = jpt.positionTypeID " +
+                "LEFT JOIN JURY_SCORE js ON ejc.positionTypeID = js.positionTypeID AND js.sessionID = ? " +
+                "WHERE ejc.eventID = ? AND ejc.isActive = 1 AND js.scoreValue IS NULL " +
+                "ORDER BY jpt.displayOrder";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, sessionID);
@@ -188,9 +194,9 @@ public class JuryScoreDAO {
     public List<String> getSubmittedPositions(int sessionID) {
         List<String> submitted = new ArrayList<>();
         String sql = "SELECT jpt.positionCode FROM JURY_SCORE js " +
-                     "JOIN JUDGE_POSITION_TYPE jpt ON js.positionTypeID = jpt.positionTypeID " +
-                     "WHERE js.sessionID = ? AND js.scoreValue IS NOT NULL " +
-                     "ORDER BY jpt.displayOrder";
+                "JOIN JUDGE_POSITION_TYPE jpt ON js.positionTypeID = jpt.positionTypeID " +
+                "WHERE js.sessionID = ? AND js.scoreValue IS NOT NULL " +
+                "ORDER BY jpt.displayOrder";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, sessionID);

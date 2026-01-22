@@ -36,13 +36,14 @@ public class FinalScoreDAO {
 
     public int saveFinalScore(FinalScore finalScore) {
         String sql = "INSERT INTO FINAL_SCORE (sessionID, scoreDifficultyBody, scoreDifficultyApparatus, " +
-                     "scoreDTotal, scoreArtistic, scoreExecution, technicalDeduction, lineDeduction, " +
-                     "timeDeduction, finalScore) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                     "ON DUPLICATE KEY UPDATE scoreDifficultyBody = ?, scoreDifficultyApparatus = ?, " +
-                     "scoreDTotal = ?, scoreArtistic = ?, scoreExecution = ?, technicalDeduction = ?, " +
-                     "lineDeduction = ?, timeDeduction = ?, finalScore = ?, calculatedAt = ?";
+                "scoreDTotal, scoreArtistic, scoreExecution, technicalDeduction, lineDeduction, " +
+                "timeDeduction, finalScore) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE scoreDifficultyBody = ?, scoreDifficultyApparatus = ?, " +
+                "scoreDTotal = ?, scoreArtistic = ?, scoreExecution = ?, technicalDeduction = ?, " +
+                "lineDeduction = ?, timeDeduction = ?, finalScore = ?, calculatedAt = ?";
 
-        try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = db.getConnection();
+                PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             Timestamp now = new Timestamp(System.currentTimeMillis());
 
             pst.setInt(1, finalScore.getSessionID());
@@ -120,7 +121,17 @@ public class FinalScoreDAO {
         double techDed = calculateDeduction(scoresByCategory.getOrDefault("RJ", new ArrayList<>()));
         finalScore.setTechnicalDeduction(techDed);
 
-        double total = dTotal + (10 - eMedian) + (10 - aMedian) - lineDed - timeDed - techDed;
+        // Logic matched with Score.java
+        // Base Score = D_Total + (10 - E_Median) + (10 - A_Median)
+        double baseScore = dTotal + (10 - eMedian) + (10 - aMedian);
+
+        // Round to 2 decimal places (mimicking Score.java String.format("%.2f"))
+        // Using Locale.US to ensure dot separator for parsing
+        String baseScoreStr = String.format(java.util.Locale.US, "%.2f", baseScore);
+        double baseScoreRounded = Double.parseDouble(baseScoreStr);
+
+        // Final Score = Base_Rounded - Deductions
+        double total = baseScoreRounded - lineDed - timeDed - techDed;
         finalScore.setFinalScore(Math.max(0, total));
 
         saveFinalScore(finalScore);
@@ -132,16 +143,33 @@ public class FinalScoreDAO {
             return 0.0;
         }
         double sum = 0;
+        int count = 0;
         for (Double score : scores) {
-            sum += score;
+            if (score > 0.0001) { // Ignore 0.0 to match Score.java logic
+                sum += score;
+                count++;
+            }
         }
-        return sum / scores.size();
+        if (count == 0)
+            return 0.0;
+        return sum / count;
     }
 
     private double calculateMedian(List<Double> scores) {
         if (scores == null || scores.isEmpty()) {
             return 0.0;
         }
+
+        // Match Score.java logic: if only one non-zero score exists, use it
+        List<Double> nonZero = new ArrayList<>();
+        for (Double s : scores) {
+            if (s > 0.0001)
+                nonZero.add(s);
+        }
+        if (nonZero.size() == 1) {
+            return nonZero.get(0);
+        }
+
         List<Double> sorted = new ArrayList<>(scores);
         Collections.sort(sorted);
         int mid = sorted.size() / 2;
@@ -152,11 +180,25 @@ public class FinalScoreDAO {
     }
 
     private double calculateTrimmedMedian(List<Double> scores) {
-        if (scores == null || scores.size() < 4) {
-            return calculateMedian(scores);
+        // Filter out 0.0 values first to ensure auto-filled missing scores don't affect calculation
+        List<Double> nonZero = new ArrayList<>();
+        if (scores != null) {
+            for (Double s : scores) {
+                if (s > 0.0001) nonZero.add(s);
+            }
         }
-        List<Double> sorted = new ArrayList<>(scores);
+
+        if (nonZero.isEmpty()) {
+            return 0.0;
+        }
+
+        if (nonZero.size() < 4) {
+            return calculateMedian(nonZero);
+        }
+
+        List<Double> sorted = new ArrayList<>(nonZero);
         Collections.sort(sorted);
+        // Trim the highest and lowest
         List<Double> trimmed = sorted.subList(1, sorted.size() - 1);
         return calculateMedian(trimmed);
     }
