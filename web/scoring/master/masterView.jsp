@@ -699,6 +699,11 @@
         $(document).ready(function() {
             var urlParams = new URLSearchParams(window.location.search);
             var eventID = urlParams.get('eventID');
+            var filterDay = urlParams.get('day');
+            var filterBatch = urlParams.get('batch');
+            var filterCategory = urlParams.get('category');
+            var filterSchool = urlParams.get('school');
+            var filterApparatus = urlParams.get('apparatusID');
 
             if (!eventID) {
                 Swal.fire({
@@ -776,10 +781,17 @@
             }
 
             function loadStartList() {
+                var data = { eventID: eventID };
+                if (filterDay) data.day = filterDay;
+                if (filterBatch) data.batch = filterBatch;
+                if (filterCategory) data.category = filterCategory;
+                if (filterSchool) data.school = filterSchool;
+                if (filterApparatus) data.apparatusID = filterApparatus;
+
                 $.ajax({
                     type: 'GET',
                     url: '../../api/jury/startlist',
-                    data: { eventID: eventID },
+                    data: data,
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {

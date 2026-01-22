@@ -796,7 +796,29 @@
 
                     // Set up quick links
                     $('#linkBackend').attr('href', '../backend/techBackend.jsp?eventID=' + eventID);
-                    $('#linkMaster').attr('href', '../master/masterView.jsp?eventID=' + eventID);
+                    
+                    $('#linkMaster').on('click', function(e) {
+                        e.preventDefault();
+                        var params = new URLSearchParams();
+                        params.set('eventID', eventID);
+                        
+                        var day = $('#filterDay').val();
+                        if (day && day !== '0') params.set('day', day);
+                        
+                        var batch = $('#filterBatch').val();
+                        if (batch && batch !== '0') params.set('batch', batch);
+                        
+                        var category = $('#filterCategory').val();
+                        if (category) params.set('category', category);
+                        
+                        var school = $('#filterSchool').val();
+                        if (school) params.set('school', school);
+                        
+                        var apparatusID = $('#filterApparatus').val();
+                        if (apparatusID && apparatusID !== '0') params.set('apparatusID', apparatusID);
+                        
+                        window.location.href = '../master/masterView.jsp?' + params.toString();
+                    });
 
                     // Back button
                     $('#btnBack').on('click', function () {
