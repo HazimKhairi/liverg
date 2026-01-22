@@ -36,18 +36,23 @@ public class JuryStartListApiServlet extends HttpServlet {
             int batch = 0;
             int apparatusID = 0;
             String category = request.getParameter("category");
+            String school = request.getParameter("school");
 
             try {
                 day = Integer.parseInt(request.getParameter("day"));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             try {
                 batch = Integer.parseInt(request.getParameter("batch"));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             try {
                 apparatusID = Integer.parseInt(request.getParameter("apparatusID"));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
 
-            List<StartListEntry> entries = startListDAO.getStartList(eventID, day, batch, apparatusID, category);
+            List<StartListEntry> entries = startListDAO.getStartList(eventID, day, batch, apparatusID, category,
+                    school);
 
             // Get current session to mark current gymnast
             JurySession currentSession = sessionDAO.getCurrentSession(eventID);
@@ -135,7 +140,15 @@ public class JuryStartListApiServlet extends HttpServlet {
     private JSONObject handleAdd(HttpServletRequest request, int eventID) throws Exception {
         JSONObject result = new JSONObject();
 
-        int apparatusID = Integer.parseInt(request.getParameter("apparatusID"));
+        String apparatusParam = request.getParameter("apparatusID");
+        int apparatusID;
+        try {
+            apparatusID = Integer.parseInt(apparatusParam);
+        } catch (NumberFormatException e) {
+            // New apparatus name
+            apparatusID = startListDAO.getOrCreateApparatusID(apparatusParam);
+        }
+
         int batchNumber = Integer.parseInt(request.getParameter("batchNumber"));
         int competitionDay = Integer.parseInt(request.getParameter("competitionDay"));
         String gymnastIDsJson = request.getParameter("gymnastIDs");

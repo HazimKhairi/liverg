@@ -441,6 +441,10 @@
         <servlet-name>JuryApparatusApiServlet</servlet-name>
         <servlet-class>com.servlet.scoring.JuryApparatusApiServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>JuryTeamsApiServlet</servlet-name>
+        <servlet-class>com.servlet.scoring.JuryTeamsApiServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>JuryGymnastsApiServlet</servlet-name>
         <url-pattern>/api/jury/gymnasts</url-pattern>
@@ -448,5 +452,9 @@
     <servlet-mapping>
         <servlet-name>JuryApparatusApiServlet</servlet-name>
         <url-pattern>/api/jury/apparatus</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>JuryTeamsApiServlet</servlet-name>
+        <url-pattern>/api/jury/teams</url-pattern>
     </servlet-mapping>
 </web-app>

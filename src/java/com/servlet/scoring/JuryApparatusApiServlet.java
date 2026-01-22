@@ -28,20 +28,32 @@ public class JuryApparatusApiServlet extends HttpServlet {
         JSONObject result = new JSONObject();
 
         try {
-            int eventID = Integer.parseInt(request.getParameter("eventID"));
+            String scope = request.getParameter("scope");
+            String sql;
+            boolean isAll = "all".equals(scope);
 
-            // Get apparatus that are used in this event via gymnast_app
-            String sql = "SELECT DISTINCT a.apparatusID, a.apparatusName " +
-                        "FROM APPARATUS a " +
-                        "JOIN GYMNAST_APP ga ON a.apparatusID = ga.apparatusID " +
-                        "WHERE ga.eventID = ? " +
-                        "ORDER BY a.apparatusName";
+            if (isAll) {
+                // Get ALL apparatuses from table
+                sql = "SELECT apparatusID, apparatusName FROM APPARATUS ORDER BY apparatusName";
+            } else {
+                // Get apparatus that are used in this event via gymnast_app
+                sql = "SELECT DISTINCT a.apparatusID, a.apparatusName " +
+                      "FROM APPARATUS a " +
+                      "JOIN GYMNAST_APP ga ON a.apparatusID = ga.apparatusID " +
+                      "WHERE ga.eventID = ? " +
+                      "ORDER BY a.apparatusName";
+            }
 
             JSONArray apparatusArray = new JSONArray();
 
             try (Connection con = db.getConnection();
                  PreparedStatement pst = con.prepareStatement(sql)) {
-                pst.setInt(1, eventID);
+                
+                if (!isAll) {
+                    int eventID = Integer.parseInt(request.getParameter("eventID"));
+                    pst.setInt(1, eventID);
+                }
+
                 ResultSet rs = pst.executeQuery();
 
                 while (rs.next()) {

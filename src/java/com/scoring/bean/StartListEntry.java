@@ -19,6 +19,7 @@ public class StartListEntry {
     // Related objects for display
     private String gymnastName;
     private String gymnastCategory;
+    private String gymnastSchool;
     private String teamName;
     private String apparatusName;
     private int teamID;
@@ -28,7 +29,7 @@ public class StartListEntry {
     }
 
     public StartListEntry(int startListID, int eventID, int gymnastID, int apparatusID,
-                          int competitionDay, int batchNumber, int startOrder) {
+            int competitionDay, int batchNumber, int startOrder) {
         this.startListID = startListID;
         this.eventID = eventID;
         this.gymnastID = gymnastID;
@@ -140,6 +141,14 @@ public class StartListEntry {
 
     public void setGymnastCategory(String gymnastCategory) {
         this.gymnastCategory = gymnastCategory;
+    }
+
+    public String getGymnastSchool() {
+        return gymnastSchool;
+    }
+
+    public void setGymnastSchool(String gymnastSchool) {
+        this.gymnastSchool = gymnastSchool;
     }
 
     public String getTeamName() {

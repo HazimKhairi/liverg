@@ -16,9 +16,11 @@
                 href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
                 rel="stylesheet">
             <!-- Font Awesome -->
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-            <!-- SweetAlert2 -->
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <style>
                 :root {
@@ -564,6 +566,28 @@
                         flex-wrap: wrap;
                     }
                 }
+
+                /* SweetAlert Custom Form Styles */
+                .swal-add-form { text-align: left; }
+                .swal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #f1f5f9; }
+                .swal-header-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3); }
+                .swal-header-text h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }
+                .swal-header-text p { margin: 4px 0 0; font-size: 13px; color: #64748b; }
+                .swal-form-group { margin-bottom: 16px; }
+                .swal-form-group:last-child { margin-bottom: 0; }
+                .swal-form-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+                .swal-form-label i { color: #00d4aa; font-size: 14px; width: 16px; text-align: center; }
+                .swal-form-select, .swal-form-input { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #1e293b; background: #f8fafc; transition: all 0.2s ease; }
+                .swal-form-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+                .swal-form-select:hover, .swal-form-input:hover { border-color: #cbd5e1; background-color: #ffffff; }
+                .swal-form-select:focus, .swal-form-input:focus { outline: none; border-color: #00d4aa; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1); }
+                .swal-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+                .swal-divider { height: 1px; background: #e2e8f0; margin: 24px 0; position: relative; }
+                .swal-divider-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 0 10px; color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+                .select2-container { width: 100% !important; text-align: left; }
+                .select2-container .select2-selection--single { height: 46px; border: 2px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+                .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 44px; padding-left: 14px; color: #1e293b; }
+                .select2-container--default .select2-selection--single .select2-selection__arrow { height: 44px; right: 8px; }
             </style>
         </head>
 
@@ -624,6 +648,12 @@
                             <label>Category</label>
                             <select id="filterCategory">
                                 <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>School</label>
+                            <select id="filterSchool">
+                                <option value="">All Schools</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -712,7 +742,8 @@
             </div>
 
             <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
             <script>
                 $(document).ready(function () {
                     var urlParams = new URLSearchParams(window.location.search);
@@ -733,7 +764,9 @@
                     var sortable = null;
                     var entries = [];
                     var gymnasts = [];
+                    var allGymnasts = [];
                     var apparatus = [];
+                    var teams = [];
 
                     // Set up quick links
                     $('#linkBackend').attr('href', '../backend/techBackend.jsp?eventID=' + eventID);
@@ -747,7 +780,9 @@
                     // Load initial data
                     loadStartList();
                     loadGymnasts();
+                    loadAllGymnasts();
                     loadApparatus();
+                    loadTeams();
 
                     function loadStartList() {
                         $.ajax({
@@ -758,6 +793,7 @@
                                 day: $('#filterDay').val(),
                                 batch: $('#filterBatch').val(),
                                 category: $('#filterCategory').val(),
+                                school: $('#filterSchool').val(),
                                 apparatusID: $('#filterApparatus').val()
                             },
                             dataType: 'json',
@@ -781,6 +817,21 @@
                                 if (response.success) {
                                     gymnasts = response.gymnasts;
                                     populateCategories();
+                                    populateSchools();
+                                }
+                            }
+                        });
+                    }
+
+                    function loadAllGymnasts() {
+                        return $.ajax({
+                            type: 'GET',
+                            url: '../../api/jury/gymnasts',
+                            data: { scope: 'all' },
+                            dataType: 'json',
+                            success: function (response) {
+                                if (response.success) {
+                                    allGymnasts = response.gymnasts;
                                 }
                             }
                         });
@@ -790,12 +841,25 @@
                         $.ajax({
                             type: 'GET',
                             url: '../../api/jury/apparatus',
-                            data: { eventID: eventID },
+                            data: { eventID: eventID, scope: 'all' },
                             dataType: 'json',
                             success: function (response) {
                                 if (response.success) {
                                     apparatus = response.apparatus;
                                     populateApparatus();
+                                }
+                            }
+                        });
+                    }
+
+                    function loadTeams() {
+                        $.ajax({
+                            type: 'GET',
+                            url: '../../api/jury/teams',
+                            dataType: 'json',
+                            success: function (response) {
+                                if (response.success) {
+                                    teams = response.teams;
                                 }
                             }
                         });
@@ -807,6 +871,16 @@
                         categories.forEach(function (cat) {
                             if (cat) {
                                 $select.append('<option value="' + cat + '">' + cat + '</option>');
+                            }
+                        });
+                    }
+
+                    function populateSchools() {
+                        var schools = [...new Set(gymnasts.map(g => g.school))];
+                        var $select = $('#filterSchool');
+                        schools.forEach(function (sch) {
+                            if (sch) {
+                                $select.append('<option value="' + sch + '">' + sch + '</option>');
                             }
                         });
                     }
@@ -905,7 +979,7 @@
                     }
 
                     // Filter change handlers
-                    $('#filterDay, #filterBatch, #filterCategory, #filterApparatus').on('change', function () {
+                    $('#filterDay, #filterBatch, #filterCategory, #filterSchool, #filterApparatus').on('change', function () {
                         loadStartList();
                     });
 
@@ -989,6 +1063,7 @@
                                         showConfirmButton: false
                                     });
                                     loadStartList();
+                                    loadApparatus();
                                 } else {
                                     Swal.fire({
                                         icon: 'error',
@@ -1006,128 +1081,378 @@
 
                     // Add gymnast button
                     $('#btnAddGymnast').on('click', function () {
+                        openAddGymnastModal();
+                    });
+
+                    function openAddGymnastModal(prefillData = {}) {
                         Swal.fire({
                             title: '',
                             html:
-                                '<style>' +
-                                '.swal-add-form { text-align: left; }' +
-                                '.swal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #f1f5f9; }' +
-                                '.swal-header-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3); }' +
-                                '.swal-header-text h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }' +
-                                '.swal-header-text p { margin: 4px 0 0; font-size: 13px; color: #64748b; }' +
-                                '.swal-form-group { margin-bottom: 16px; }' +
-                                '.swal-form-group:last-child { margin-bottom: 0; }' +
-                                '.swal-form-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }' +
-                                '.swal-form-label i { color: #00d4aa; font-size: 14px; width: 16px; text-align: center; }' +
-                                '.swal-form-select { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #1e293b; background: #f8fafc; cursor: pointer; transition: all 0.2s ease; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%2364748b\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }' +
-                                '.swal-form-select:hover { border-color: #cbd5e1; background-color: #ffffff; }' +
-                                '.swal-form-select:focus { outline: none; border-color: #00d4aa; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1); }' +
-                                '.swal-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }' +
-                                '.swal-divider { height: 1px; background: linear-gradient(90deg, transparent, #e2e8f0, transparent); margin: 20px 0; }' +
-                                '</style>' +
                                 '<div class="swal-add-form">' +
                                 '<div class="swal-header">' +
                                 '<div class="swal-header-icon"><i class="fas fa-user-plus"></i></div>' +
                                 '<div class="swal-header-text">' +
                                 '<h3>Add Gymnast to Start List</h3>' +
-                                '<p>Select details below to add a new entry</p>' +
+                                '<p>Search existing database or create new</p>' +
                                 '</div>' +
                                 '</div>' +
+                                
                                 '<div class="swal-form-group">' +
                                 '<label class="swal-form-label"><i class="fas fa-medal"></i>Apparatus</label>' +
                                 '<select id="swalApparatus" class="swal-form-select">' +
                                 '<option value="">Select apparatus...</option>' +
-                                apparatus.map(function (a) { return '<option value="' + a.apparatusID + '">' + a.apparatusName + '</option>'; }).join('') +
+                                apparatus.map(function (a) { return '<option value="' + a.apparatusID + '" ' + (prefillData.apparatusID == a.apparatusID ? 'selected' : '') + '>' + a.apparatusName + '</option>'; }).join('') +
                                 '</select>' +
                                 '</div>' +
                                 '<div class="swal-form-row">' +
                                 '<div class="swal-form-group">' +
                                 '<label class="swal-form-label"><i class="fas fa-calendar-day"></i>Day</label>' +
                                 '<select id="swalDay" class="swal-form-select">' +
-                                '<option value="1">Day 1</option><option value="2">Day 2</option><option value="3">Day 3</option>' +
+                                '<option value="1" ' + (prefillData.day == "1" ? 'selected' : '') + '>Day 1</option>' +
+                                '<option value="2" ' + (prefillData.day == "2" ? 'selected' : '') + '>Day 2</option>' +
+                                '<option value="3" ' + (prefillData.day == "3" ? 'selected' : '') + '>Day 3</option>' +
                                 '</select>' +
                                 '</div>' +
                                 '<div class="swal-form-group">' +
                                 '<label class="swal-form-label"><i class="fas fa-layer-group"></i>Batch</label>' +
                                 '<select id="swalBatch" class="swal-form-select">' +
-                                '<option value="1">Batch 1</option><option value="2">Batch 2</option><option value="3">Batch 3</option>' +
+                                '<option value="1" ' + (prefillData.batch == "1" ? 'selected' : '') + '>Batch 1</option>' +
+                                '<option value="2" ' + (prefillData.batch == "2" ? 'selected' : '') + '>Batch 2</option>' +
+                                '<option value="3" ' + (prefillData.batch == "3" ? 'selected' : '') + '>Batch 3</option>' +
                                 '</select>' +
                                 '</div>' +
                                 '</div>' +
-                                '<div class="swal-divider"></div>' +
+                                '<div class="swal-divider"><span class="swal-divider-text">Gymnast Details</span></div>' +
+                                
+                                // Existing Gymnast Section
                                 '<div class="swal-form-group">' +
-                                '<label class="swal-form-label"><i class="fas fa-user"></i>Gymnast</label>' +
-                                '<select id="swalGymnast" class="swal-form-select">' +
-                                '<option value="">Select gymnast...</option>' +
-                                gymnasts.map(function (g) { return '<option value="' + g.gymnastID + '">' + g.gymnastName + ' (' + g.teamName + ')</option>'; }).join('') +
+                                '<label class="swal-form-label"><i class="fas fa-search"></i>Select Existing Gymnast</label>' +
+                                '<select id="swalGymnastSelect" class="swal-form-select">' +
+                                '<option value="">Search for a gymnast...</option>' +
+                                allGymnasts.map(function (g) { return '<option value="' + g.gymnastID + '">' + g.gymnastName + ' (' + (g.teamName || 'No Team') + ')</option>'; }).join('') +
                                 '</select>' +
                                 '</div>' +
                                 '</div>',
                             showCancelButton: true,
                             confirmButtonColor: '#00d4aa',
                             cancelButtonColor: '#64748b',
-                            confirmButtonText: '<i class="fas fa-plus" style="margin-right: 6px;"></i>Add Gymnast',
+                            confirmButtonText: '<i class="fas fa-plus" style="margin-right: 6px;"></i>Add to Start List',
                             cancelButtonText: 'Cancel',
-                            width: 480,
-                            customClass: {
-                                popup: 'swal-add-popup',
-                                confirmButton: 'swal-confirm-btn',
-                                cancelButton: 'swal-cancel-btn'
+                            width: 550,
+                            didOpen: function() {
+                                // Initialize Select2 for Apparatus
+                                $('#swalApparatus').select2({
+                                    dropdownParent: Swal.getContainer(),
+                                    placeholder: 'Select or type apparatus...',
+                                    width: '100%',
+                                    tags: true
+                                });
+
+                                // Initialize Select2 for Gymnast Search
+                                $('#swalGymnastSelect').select2({
+                                    dropdownParent: Swal.getContainer(),
+                                    placeholder: 'Search for a gymnast...',
+                                    allowClear: true,
+                                    width: '100%',
+                                    language: {
+                                        noResults: function() {
+                                            return "No results found. <a href='#' id='btnCreateNewFromSearch' style='color:#00d4aa; font-weight:600; cursor:pointer;'>Create New</a>";
+                                        }
+                                    },
+                                    escapeMarkup: function(markup) {
+                                        return markup;
+                                    }
+                                });
+
+                                // Pre-select gymnast if provided
+                                if (prefillData.gymnastID) {
+                                    $('#swalGymnastSelect').val(prefillData.gymnastID).trigger('change');
+                                }
+
+                                var currentSearchTerm = '';
+
+                                function showCreateNew() {
+                                    // Save current state
+                                    var context = {
+                                        apparatusID: $('#swalApparatus').val(),
+                                        day: $('#swalDay').val(),
+                                        batch: $('#swalBatch').val()
+                                    };
+                                    
+                                    // Open Create New Modal
+                                    openCreateNewGymnastModal(currentSearchTerm, context);
+                                }
+
+                                // Handle "Create New" click
+                                $(document).off('mousedown', '#btnCreateNewFromSearch').on('mousedown', '#btnCreateNewFromSearch', function(e) {
+                                    e.preventDefault();
+                                    // Try to grab value one last time just in case
+                                    var val = $('.select2-container--open .select2-search__field').val();
+                                    if(val) currentSearchTerm = val;
+                                    
+                                    showCreateNew();
+                                });
+
+                                // Handle Search Input & Enter Key
+                                $('#swalGymnastSelect').on('select2:open', function() {
+                                    var $search = $('.select2-container--open .select2-search__field');
+                                    
+                                    // Capture search term as user types
+                                    $search.off('input.capture').on('input.capture', function() {
+                                        currentSearchTerm = $(this).val();
+                                    });
+
+                                    // Handle Enter key
+                                    $search.off('keydown.createNew').on('keydown.createNew', function(e) {
+                                        if (e.key === 'Enter') {
+                                            // Only trigger if "Create New" link is visible (meaning no results)
+                                            if ($('#btnCreateNewFromSearch').length > 0) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                showCreateNew();
+                                            }
+                                        }
+                                    });
+                                });
                             },
                             preConfirm: function () {
                                 var apparatusID = document.getElementById('swalApparatus').value;
-                                var gymnastID = document.getElementById('swalGymnast').value;
                                 var day = document.getElementById('swalDay').value;
                                 var batch = document.getElementById('swalBatch').value;
 
                                 if (!apparatusID) {
-                                    Swal.showValidationMessage('<i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i>Please select an apparatus');
-                                    return false;
-                                }
-                                if (!gymnastID) {
-                                    Swal.showValidationMessage('<i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i>Please select a gymnast');
+                                    Swal.showValidationMessage('Please select an apparatus');
                                     return false;
                                 }
 
-                                return { apparatusID: apparatusID, gymnastID: gymnastID, day: day, batch: batch };
+                                var gymnastID = $('#swalGymnastSelect').val();
+                                
+                                if (gymnastID) {
+                                    return {
+                                        gymnastID: gymnastID,
+                                        apparatusID: apparatusID,
+                                        day: day,
+                                        batch: batch
+                                    };
+                                } else {
+                                    Swal.showValidationMessage('Please select a gymnast');
+                                    return false;
+                                }
                             }
                         }).then(function (result) {
                             if (result.isConfirmed) {
+                                var data = result.value;
+                                addGymnastToStartList(data.gymnastID, data.apparatusID, data.day, data.batch);
+                            }
+                        });
+                    }
+
+                    function openCreateNewGymnastModal(name, context) {
+                        // Extract unique categories and schools from allGymnasts
+                        var uniqueCategories = [...new Set(allGymnasts.map(function(g) { return g.category; }))].filter(Boolean).sort();
+                        var uniqueSchools = [...new Set(allGymnasts.map(function(g) { return g.school; }))].filter(Boolean).sort();
+
+                        Swal.fire({
+                            title: '',
+                            html:
+                                '<div class="swal-add-form">' +
+                                '<div class="swal-header">' +
+                                '<div class="swal-header-icon"><i class="fas fa-user-plus"></i></div>' +
+                                '<div class="swal-header-text">' +
+                                '<h3>Create New Gymnast</h3>' +
+                                '<p>Enter details for new gymnast</p>' +
+                                '</div>' +
+                                '</div>' +
+                                
+                                '<div class="swal-form-group">' +
+                                '<label class="swal-form-label"><i class="fas fa-user-tag"></i>Name</label>' +
+                                '<input id="swalName" class="swal-form-input" placeholder="Gymnast Name" value="' + (name || '') + '">' +
+                                '</div>' +
+                                '<div class="swal-form-row">' +
+                                '<div class="swal-form-group">' +
+                                '<label class="swal-form-label"><i class="fas fa-id-card"></i>IC / ID</label>' +
+                                '<input id="swalIC" class="swal-form-input" placeholder="IC Number">' +
+                                '</div>' +
+                                '<div class="swal-form-group">' +
+                                '<label class="swal-form-label"><i class="fas fa-users"></i>Team</label>' +
+                                '<select id="swalTeam" class="swal-form-select">' +
+                                '<option value="">Select or type team...</option>' +
+                                teams.map(function (t) { return '<option value="' + t.teamID + '">' + t.teamName + '</option>'; }).join('') +
+                                '</select>' +
+                                '</div>' +
+                                '</div>' +
+                                '<div class="swal-form-row">' +
+                                '<div class="swal-form-group">' +
+                                '<label class="swal-form-label"><i class="fas fa-tag"></i>Category</label>' +
+                                '<select id="swalCategory" class="swal-form-select">' +
+                                '<option value="">Select or type category...</option>' +
+                                uniqueCategories.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') +
+                                '</select>' +
+                                '</div>' +
+                                '<div class="swal-form-group">' +
+                                '<label class="swal-form-label"><i class="fas fa-school"></i>School</label>' +
+                                '<select id="swalSchool" class="swal-form-select">' +
+                                '<option value="">Select or type school...</option>' +
+                                uniqueSchools.map(function(s) { return '<option value="' + s + '">' + s + '</option>'; }).join('') +
+                                '</select>' +
+                                '</div>' +
+                                '</div>' +
+                                '</div>',
+                            showCancelButton: true,
+                            confirmButtonColor: '#00d4aa',
+                            cancelButtonColor: '#64748b',
+                            confirmButtonText: '<i class="fas fa-save" style="margin-right: 6px;"></i>Create Gymnast',
+                            cancelButtonText: 'Back',
+                            width: 550,
+                            didOpen: function() {
+                                // Initialize Select2 for Team (with tags)
+                                $('#swalTeam').select2({
+                                    dropdownParent: Swal.getContainer(),
+                                    placeholder: 'Select or type team...',
+                                    width: '100%',
+                                    tags: true
+                                });
+
+                                // Initialize Select2 for Category (with tags)
+                                $('#swalCategory').select2({
+                                    dropdownParent: Swal.getContainer(),
+                                    placeholder: 'Select or type category...',
+                                    width: '100%',
+                                    tags: true
+                                });
+
+                                // Initialize Select2 for School (with tags)
+                                $('#swalSchool').select2({
+                                    dropdownParent: Swal.getContainer(),
+                                    placeholder: 'Select or type school...',
+                                    width: '100%',
+                                    tags: true
+                                });
+                                
+                                setTimeout(function() {
+                                    $('#swalName').focus();
+                                }, 200);
+                            },
+                            preConfirm: function () {
+                                var name = document.getElementById('swalName').value;
+                                var ic = document.getElementById('swalIC').value;
+                                var team = $('#swalTeam').val();
+                                var category = $('#swalCategory').val();
+                                var school = $('#swalSchool').val();
+
+                                if (!name || !ic || !team || !category) {
+                                    Swal.showValidationMessage('Please fill in all required fields');
+                                    return false;
+                                }
+
+                                return {
+                                    name: name,
+                                    ic: ic,
+                                    team: team,
+                                    category: category,
+                                    school: school
+                                };
+                            }
+                        }).then(function (result) {
+                            if (result.isConfirmed) {
+                                var data = result.value;
+                                
+                                // Create gymnast
                                 $.ajax({
                                     type: 'POST',
-                                    url: '../../api/jury/startlist',
+                                    url: '../../api/jury/gymnasts',
                                     data: {
-                                        action: 'add',
+                                        gymnastName: data.name,
+                                        gymnastIC: data.ic,
+                                        teamID: data.team,
+                                        gymnastCategory: data.category,
+                                        gymnastSchool: data.school,
                                         eventID: eventID,
-                                        apparatusID: result.value.apparatusID,
-                                        batchNumber: result.value.batch,
-                                        competitionDay: result.value.day,
-                                        gymnastIDs: JSON.stringify([parseInt(result.value.gymnastID)])
+                                        apparatusID: context.apparatusID // Just for API compatibility, not used for linking here
                                     },
                                     dataType: 'json',
-                                    success: function (response) {
+                                    success: function(response) {
                                         if (response.success) {
-                                            Swal.fire({
-                                                icon: 'success',
-                                                title: 'Added!',
-                                                text: 'Gymnast added to start list.',
-                                                timer: 1500,
-                                                showConfirmButton: false
+                                            // Refresh data
+                                            loadGymnasts();
+                                            loadTeams(); // Reload teams in case a new one was created
+                                            
+                                            loadAllGymnasts().then(function() {
+                                                // Re-open original modal with new gymnast selected
+                                                context.gymnastID = response.gymnastID;
+                                                openAddGymnastModal(context);
+                                                
+                                                // Show small success toast
+                                                const Toast = Swal.mixin({
+                                                    toast: true,
+                                                    position: 'top-end',
+                                                    showConfirmButton: false,
+                                                    timer: 3000,
+                                                    timerProgressBar: true
+                                                });
+                                                Toast.fire({
+                                                    icon: 'success',
+                                                    title: 'Gymnast Created Successfully'
+                                                });
                                             });
-                                            loadStartList();
                                         } else {
                                             Swal.fire({
                                                 icon: 'error',
                                                 title: 'Error',
-                                                text: response.error || 'Failed to add gymnast',
-                                                confirmButtonColor: '#00d4aa'
+                                                text: response.error || 'Failed to create gymnast'
                                             });
                                         }
+                                    },
+                                    error: function() {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: 'Server error creating gymnast'
+                                        });
                                     }
                                 });
+                            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                // Go back to original modal
+                                openAddGymnastModal(context);
                             }
                         });
-                    });
+                    }
+
+                    function addGymnastToStartList(gymnastID, apparatusID, day, batch) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '../../api/jury/startlist',
+                            data: {
+                                action: 'add',
+                                eventID: eventID,
+                                apparatusID: apparatusID,
+                                batchNumber: batch,
+                                competitionDay: day,
+                                gymnastIDs: JSON.stringify([parseInt(gymnastID)])
+                            },
+                            dataType: 'json',
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Added!',
+                                        text: 'Gymnast added to start list.',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    loadStartList();
+                                    loadApparatus();
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.error || 'Failed to add gymnast to start list',
+                                        confirmButtonColor: '#00d4aa'
+                                    });
+                                }
+                            }
+                        });
+                    }
 
                     // Remove entry
                     window.removeEntry = function (startListID) {
