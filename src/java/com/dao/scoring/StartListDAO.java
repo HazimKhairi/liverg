@@ -193,15 +193,37 @@ public class StartListDAO {
 
     public void randomizeOrderInBatch(int eventID, int competitionDay, int batchNumber) {
         String sql = "UPDATE START_LIST sl " +
-                "JOIN (SELECT startListID, ROW_NUMBER() OVER (ORDER BY RAND()) as newOrder " +
-                "      FROM START_LIST WHERE eventID = ? AND competitionDay = ? AND batchNumber = ?) ranked " +
+                "JOIN (SELECT sl_base.startListID, ROW_NUMBER() OVER (ORDER BY ar.rnd_app, cr.rnd_cat, RAND()) as newOrder "
+                +
+                "      FROM START_LIST sl_base " +
+                "      JOIN GYMNAST g_base ON sl_base.gymnastID = g_base.gymnastID " +
+                "      JOIN (SELECT apparatusID, RAND() as rnd_app " +
+                "            FROM START_LIST " +
+                "            WHERE eventID = ? AND competitionDay = ? AND batchNumber = ? " +
+                "            GROUP BY apparatusID) ar ON sl_base.apparatusID = ar.apparatusID " +
+                "      JOIN (SELECT s.apparatusID, g.gymnastCategory, RAND() as rnd_cat " +
+                "            FROM START_LIST s " +
+                "            JOIN GYMNAST g ON s.gymnastID = g.gymnastID " +
+                "            WHERE s.eventID = ? AND s.competitionDay = ? AND s.batchNumber = ? " +
+                "            GROUP BY s.apparatusID, g.gymnastCategory) cr " +
+                "            ON sl_base.apparatusID = cr.apparatusID AND g_base.gymnastCategory = cr.gymnastCategory " +
+                "      WHERE sl_base.eventID = ? AND sl_base.competitionDay = ? AND sl_base.batchNumber = ?) ranked " +
                 "ON sl.startListID = ranked.startListID " +
                 "SET sl.startOrder = ranked.newOrder, sl.randomSeed = FLOOR(RAND() * 1000000)";
 
         try (Connection con = db.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+            // Params for ar subquery
             pst.setInt(1, eventID);
             pst.setInt(2, competitionDay);
             pst.setInt(3, batchNumber);
+            // Params for cr subquery
+            pst.setInt(4, eventID);
+            pst.setInt(5, competitionDay);
+            pst.setInt(6, batchNumber);
+            // Params for main query
+            pst.setInt(7, eventID);
+            pst.setInt(8, competitionDay);
+            pst.setInt(9, batchNumber);
             pst.executeUpdate();
         } catch (SQLException e) {
             printSQLException(e);

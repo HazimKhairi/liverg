@@ -92,6 +92,41 @@
                     color: var(--primary-magenta);
                 }
 
+                .list-group-header {
+                    background: #e2e8f0;
+                    color: #475569;
+                    padding: 0.5rem 1rem;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    border-bottom: 1px solid #cbd5e1;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    pointer-events: none; /* Prevent dragging */
+                }
+
+                .list-group-header.main-header {
+                    background: #cbd5e1;
+                    color: #1e293b;
+                    font-size: 0.8rem;
+                }
+
+                .list-group-header.sub-header {
+                    background: #f1f5f9;
+                    color: #334155;
+                    padding-left: 1.5rem;
+                }
+                
+                .list-group-header.sub-header-2 {
+                    background: #f8fafc;
+                    color: #64748b;
+                    padding-left: 2.5rem;
+                    font-size: 0.7rem;
+                    font-style: italic;
+                }
+
                 .page-title {
                     display: flex;
                     align-items: center;
@@ -309,19 +344,6 @@
                 .start-list-item.scored {
                     background: rgba(16, 185, 129, 0.1);
                     border-color: rgba(16, 185, 129, 0.3);
-                }
-
-                .drag-handle {
-                    cursor: grab;
-                    color: var(--text-muted);
-                    margin-right: 0.75rem;
-                    opacity: 0.5;
-                    transition: opacity 0.2s;
-                    font-size: 0.9rem;
-                }
-
-                .start-list-item:hover .drag-handle {
-                    opacity: 1;
                 }
 
                 .item-order {
@@ -959,14 +981,42 @@
                         }
 
                         var html = '<ul class="start-list" id="sortableList">';
+                        
+                        var lastDay = null;
+                        var lastBatch = null;
+                        var lastApparatus = null;
+                        var lastCategory = null;
 
                         entries.forEach(function (entry, index) {
+                            // Check for Day/Batch change
+                            if (entry.competitionDay !== lastDay || entry.batchNumber !== lastBatch) {
+                                html += '<li class="list-group-header main-header">Day ' + entry.competitionDay + ' - Batch ' + entry.batchNumber + '</li>';
+                                lastDay = entry.competitionDay;
+                                lastBatch = entry.batchNumber;
+                                lastApparatus = null; // Reset lower levels
+                                lastCategory = null;
+                            }
+
+                            // Check for Apparatus change
+                            if (entry.apparatusName !== lastApparatus) {
+                                html += '<li class="list-group-header sub-header"><i class="fas fa-bullseye"></i> ' + entry.apparatusName + '</li>';
+                                lastApparatus = entry.apparatusName;
+                                lastCategory = null; // Reset lower level
+                            }
+
+                            // Check for Category change
+                            // Use gymnastCategory from entry (make sure it's available)
+                            var currentCategory = entry.category || entry.gymnastCategory || 'Uncategorized';
+                            if (currentCategory !== lastCategory) {
+                                html += '<li class="list-group-header sub-header-2"><i class="fas fa-users"></i> ' + currentCategory + '</li>';
+                                lastCategory = currentCategory;
+                            }
+
                             var scoredClass = entry.isScored ? 'scored' : '';
                             var scoreClass = entry.finalScore ? '' : 'pending';
                             var scoreDisplay = entry.finalScore ? entry.finalScore.toFixed(3) : '-';
 
                             html += '<li class="start-list-item ' + scoredClass + '" data-id="' + entry.startListID + '">' +
-                                '<i class="fas fa-grip-vertical drag-handle"></i>' +
                                 '<div class="item-order">' + (index + 1) + '</div>' +
                                 '<div class="item-info">' +
                                 '<div class="item-name">' + entry.gymnastName + '</div>' +
@@ -1006,11 +1056,10 @@
                                 sortable.destroy();
                             }
                             sortable = new Sortable(el, {
-                                handle: '.drag-handle',
                                 animation: 150,
                                 ghostClass: 'sortable-ghost',
                                 chosenClass: 'sortable-chosen',
-                                filter: '.scored',
+                                filter: '.scored, .list-group-header',
                                 onEnd: function (evt) {
                                     updateOrderNumbers();
                                 }
