@@ -584,10 +584,26 @@
                 .swal-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
                 .swal-divider { height: 1px; background: #e2e8f0; margin: 24px 0; position: relative; }
                 .swal-divider-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 0 10px; color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+                
+                /* Select2 Custom Styling to match Inputs */
                 .select2-container { width: 100% !important; text-align: left; }
-                .select2-container .select2-selection--single { height: 46px; border: 2px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
-                .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 44px; padding-left: 14px; color: #1e293b; }
+                .select2-container .select2-selection--single { height: 46px; border: 2px solid #e2e8f0; border-radius: 10px; background: #f8fafc; transition: all 0.2s ease; box-sizing: border-box; }
+                .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 42px; padding-left: 14px; color: #1e293b; font-size: 14px; }
                 .select2-container--default .select2-selection--single .select2-selection__arrow { height: 44px; right: 8px; }
+                
+                /* Select2 Hover State */
+                .select2-container--default .select2-selection--single:hover { border-color: #cbd5e1; background-color: #ffffff; }
+                
+                /* Select2 Focus/Open State */
+                .select2-container--open .select2-selection--single, 
+                .select2-container--focus .select2-selection--single { border-color: #00d4aa !important; background-color: #ffffff !important; box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1); outline: none; }
+                
+                /* Dropdown Styling */
+                .select2-dropdown { border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden; z-index: 9999; }
+                .select2-results__option { padding: 8px 14px; font-size: 14px; }
+                .select2-container--default .select2-results__option--highlighted[aria-selected] { background-color: #00d4aa; }
+                .select2-search--dropdown .select2-search__field { border-radius: 6px; border: 1px solid #e2e8f0; padding: 6px 10px; }
+                .select2-search--dropdown .select2-search__field:focus { border-color: #00d4aa; outline: none; }
             </style>
         </head>
 
