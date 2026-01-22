@@ -1045,33 +1045,8 @@
 
                         html += '</ul>';
                         $container.html(html);
-
-                        initSortable();
                     }
 
-                    function initSortable() {
-                        var el = document.getElementById('sortableList');
-                        if (el) {
-                            if (sortable) {
-                                sortable.destroy();
-                            }
-                            sortable = new Sortable(el, {
-                                animation: 150,
-                                ghostClass: 'sortable-ghost',
-                                chosenClass: 'sortable-chosen',
-                                filter: '.scored, .list-group-header',
-                                onEnd: function (evt) {
-                                    updateOrderNumbers();
-                                }
-                            });
-                        }
-                    }
-
-                    function updateOrderNumbers() {
-                        $('#sortableList .start-list-item').each(function (index) {
-                            $(this).find('.item-order').text(index + 1);
-                        });
-                    }
 
                     function updateStats() {
                         var total = entries.length;

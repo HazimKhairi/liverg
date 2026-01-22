@@ -206,7 +206,8 @@ public class StartListDAO {
                 "            JOIN GYMNAST g ON s.gymnastID = g.gymnastID " +
                 "            WHERE s.eventID = ? AND s.competitionDay = ? AND s.batchNumber = ? " +
                 "            GROUP BY s.apparatusID, g.gymnastCategory) cr " +
-                "            ON sl_base.apparatusID = cr.apparatusID AND g_base.gymnastCategory = cr.gymnastCategory " +
+                "            ON sl_base.apparatusID = cr.apparatusID AND g_base.gymnastCategory <=> cr.gymnastCategory "
+                +
                 "      WHERE sl_base.eventID = ? AND sl_base.competitionDay = ? AND sl_base.batchNumber = ?) ranked " +
                 "ON sl.startListID = ranked.startListID " +
                 "SET sl.startOrder = ranked.newOrder, sl.randomSeed = FLOOR(RAND() * 1000000)";

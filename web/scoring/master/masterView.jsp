@@ -1080,7 +1080,10 @@
 
                     var allSubmitted = submitted === total && total > 0;
                     $('#btnForceSubmit').prop('disabled', allSubmitted || status !== 'SCORING');
-                    $('#btnAdvance').prop('disabled', status !== 'SUBMITTED' && status !== 'FINALIZED');
+                    
+                    // Disable Next Gymnast button if final score is not available (null value)
+                    var hasFinalScore = data.finalScore && data.finalScore.finalScore != null;
+                    $('#btnAdvance').prop('disabled', !hasFinalScore);
                 }
 
                 loadStartList();

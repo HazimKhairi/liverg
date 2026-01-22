@@ -178,6 +178,11 @@ public class JurySessionApiServlet extends HttpServlet {
                     result = handleOverrideScore(sID, pCode, newScore, staffID, reason);
                     break;
 
+                case "forceSubmitAll":
+                    int fSessionID = Integer.parseInt(request.getParameter("sessionID"));
+                    result = handleForceSubmitAll(eventID, fSessionID);
+                    break;
+
                 default:
                     result.put("success", false);
                     result.put("error", "Unknown action");
@@ -341,6 +346,30 @@ public class JurySessionApiServlet extends HttpServlet {
             result.put("success", false);
             result.put("error", "Invalid position code");
         }
+
+        return result;
+    }
+
+    private JSONObject handleForceSubmitAll(int eventID, int sessionID) {
+        JSONObject result = new JSONObject();
+
+        List<String> pending = scoreDAO.getPendingPositions(sessionID, eventID);
+        JudgePositionTypeDAO positionDAO = new JudgePositionTypeDAO();
+
+        int count = 0;
+        for (String code : pending) {
+            JudgePositionType pos = positionDAO.getPositionByCode(code);
+            if (pos != null) {
+                scoreDAO.submitScore(sessionID, pos.getPositionTypeID(), 0.0);
+                count++;
+            }
+        }
+
+        sessionDAO.submitSession(sessionID);
+        finalScoreDAO.calculateAndSaveFinalScore(sessionID);
+
+        result.put("success", true);
+        result.put("message", "Force submitted " + count + " scores");
 
         return result;
     }
