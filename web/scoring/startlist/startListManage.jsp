@@ -829,6 +829,7 @@
                             url: '../../api/jury/gymnasts',
                             data: { scope: 'all' },
                             dataType: 'json',
+                            cache: false,
                             success: function (response) {
                                 if (response.success) {
                                     allGymnasts = response.gymnasts;
@@ -1169,7 +1170,13 @@
 
                                 // Pre-select gymnast if provided
                                 if (prefillData.gymnastID) {
-                                    $('#swalGymnastSelect').val(prefillData.gymnastID).trigger('change');
+                                    if ($('#swalGymnastSelect').find("option[value='" + prefillData.gymnastID + "']").length) {
+                                        $('#swalGymnastSelect').val(prefillData.gymnastID).trigger('change');
+                                    } else if (prefillData.gymnastName) {
+                                        // Fallback if option not found (e.g. not loaded yet)
+                                        var newOption = new Option(prefillData.gymnastName + ' (New)', prefillData.gymnastID, true, true);
+                                        $('#swalGymnastSelect').append(newOption).trigger('change');
+                                    }
                                 }
 
                                 var currentSearchTerm = '';
@@ -1383,20 +1390,8 @@
                                             loadAllGymnasts().then(function() {
                                                 // Re-open original modal with new gymnast selected
                                                 context.gymnastID = response.gymnastID;
+                                                context.gymnastName = data.name; // Pass name for fallback
                                                 openAddGymnastModal(context);
-                                                
-                                                // Show small success toast
-                                                const Toast = Swal.mixin({
-                                                    toast: true,
-                                                    position: 'top-end',
-                                                    showConfirmButton: false,
-                                                    timer: 3000,
-                                                    timerProgressBar: true
-                                                });
-                                                Toast.fire({
-                                                    icon: 'success',
-                                                    title: 'Gymnast Created Successfully'
-                                                });
                                             });
                                         } else {
                                             Swal.fire({
