@@ -112,15 +112,33 @@ public class JuryGymnastsApiServlet extends HttpServlet {
             }
 
             int eventID = Integer.parseInt(request.getParameter("eventID"));
-            int apparatusID = Integer.parseInt(request.getParameter("apparatusID"));
+
+            // apparatusID might be null or empty if we are just creating a gymnast without
+            // assigning to a specific apparatus yet.
+            // But the current flow in startListManage.jsp seems to pass it.
+            // If it's passed as "", parse int will fail.
+            String apparatusParam = request.getParameter("apparatusID");
+            int apparatusID = 0;
+            if (apparatusParam != null && !apparatusParam.isEmpty() && !apparatusParam.equals("undefined")) {
+                try {
+                    apparatusID = Integer.parseInt(apparatusParam);
+                } catch (NumberFormatException e) {
+                    // Try to get or create if it's a new apparatus name
+                    com.dao.scoring.StartListDAO startListDAO = new com.dao.scoring.StartListDAO();
+                    apparatusID = startListDAO.getOrCreateApparatusID(apparatusParam);
+                }
+            }
 
             Gymnast gymnast = new Gymnast();
             // Use "-" for gymnastICPic since we don't handle file upload here
             int gymnastID = gymnast.addGymnast(gymnastName, gymnastIC, "-", gymnastSchool, gymnastCategory, teamID);
 
             if (gymnastID > 0) {
-                gymnast.addGymnastApp(gymnastID, apparatusID, eventID);
-                gymnast.addComposite(gymnastID, teamID, apparatusID, eventID);
+                // Only link if apparatusID is valid (>0)
+                if (apparatusID > 0) {
+                    gymnast.addGymnastApp(gymnastID, apparatusID, eventID);
+                    gymnast.addComposite(gymnastID, teamID, apparatusID, eventID);
+                }
 
                 result.put("success", true);
                 result.put("gymnastID", gymnastID);
