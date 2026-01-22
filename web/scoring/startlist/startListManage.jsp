@@ -415,6 +415,16 @@
                     color: white;
                 }
 
+                .btn-icon-move {
+                    background: rgba(100, 116, 139, 0.1);
+                    color: var(--text-secondary);
+                }
+
+                .btn-icon-move:hover:not(:disabled) {
+                    background: var(--text-secondary);
+                    color: white;
+                }
+
                 .btn-icon:disabled {
                     opacity: 0.3;
                     cursor: not-allowed;
@@ -946,8 +956,14 @@
                                 '</div>' +
                                 '<div class="item-score ' + scoreClass + '">' + scoreDisplay + '</div>' +
                                 '<div class="item-actions">' +
+                                '<button class="btn-icon btn-icon-move" onclick="moveItemUp(this)" ' + (entry.isScored ? 'disabled' : '') + ' title="Move Up">' +
+                                '<i class="fas fa-arrow-up"></i>' +
+                                '</button>' +
+                                '<button class="btn-icon btn-icon-move" onclick="moveItemDown(this)" ' + (entry.isScored ? 'disabled' : '') + ' title="Move Down">' +
+                                '<i class="fas fa-arrow-down"></i>' +
+                                '</button>' +
                                 '<button class="btn-icon btn-icon-delete" onclick="removeEntry(' + entry.startListID + ')" ' +
-                                (entry.isScored ? 'disabled' : '') + '>' +
+                                (entry.isScored ? 'disabled' : '') + ' title="Remove">' +
                                 '<i class="fas fa-trash"></i>' +
                                 '</button>' +
                                 '</div>' +
@@ -1467,6 +1483,28 @@
                             }
                         });
                     }
+
+                    // Move item up
+                    window.moveItemUp = function(btn) {
+                        var $item = $(btn).closest('.start-list-item');
+                        var $prev = $item.prev('.start-list-item');
+                        
+                        if ($prev.length && !$item.hasClass('scored')) {
+                            $item.insertBefore($prev);
+                            updateOrderNumbers();
+                        }
+                    };
+
+                    // Move item down
+                    window.moveItemDown = function(btn) {
+                        var $item = $(btn).closest('.start-list-item');
+                        var $next = $item.next('.start-list-item');
+                        
+                        if ($next.length && !$item.hasClass('scored')) {
+                            $item.insertAfter($next);
+                            updateOrderNumbers();
+                        }
+                    };
 
                     // Remove entry
                     window.removeEntry = function (startListID) {
