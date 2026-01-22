@@ -432,4 +432,21 @@
         <servlet-name>JuryStartListApiServlet</servlet-name>
         <url-pattern>/api/jury/startlist</url-pattern>
     </servlet-mapping>
+    <!-- Jury Gymnasts and Apparatus API Servlets -->
+    <servlet>
+        <servlet-name>JuryGymnastsApiServlet</servlet-name>
+        <servlet-class>com.servlet.scoring.JuryGymnastsApiServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>JuryApparatusApiServlet</servlet-name>
+        <servlet-class>com.servlet.scoring.JuryApparatusApiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>JuryGymnastsApiServlet</servlet-name>
+        <url-pattern>/api/jury/gymnasts</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>JuryApparatusApiServlet</servlet-name>
+        <url-pattern>/api/jury/apparatus</url-pattern>
+    </servlet-mapping>
 </web-app>
