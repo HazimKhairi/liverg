@@ -149,6 +149,12 @@ public class JuryStartListApiServlet extends HttpServlet {
             apparatusID = startListDAO.getOrCreateApparatusID(apparatusParam);
         }
 
+        if (apparatusID == -1) {
+            result.put("success", false);
+            result.put("error", "Failed to create or retrieve apparatus: " + apparatusParam);
+            return result;
+        }
+
         int batchNumber = Integer.parseInt(request.getParameter("batchNumber"));
         int competitionDay = Integer.parseInt(request.getParameter("competitionDay"));
         String gymnastIDsJson = request.getParameter("gymnastIDs");

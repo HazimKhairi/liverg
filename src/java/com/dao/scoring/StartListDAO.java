@@ -417,9 +417,12 @@ public class StartListDAO {
 
     public int getOrCreateApparatusID(String apparatusName) {
         String selectSql = "SELECT apparatusID FROM APPARATUS WHERE apparatusName = ?";
-        String insertSql = "INSERT INTO APPARATUS (apparatusName) VALUES (?)";
+        // apparatusID is not AUTO_INCREMENT, so we must generate it manually.
+        String maxIdSql = "SELECT COALESCE(MAX(apparatusID), 0) + 1 FROM APPARATUS";
+        String insertSql = "INSERT INTO APPARATUS (apparatusID, apparatusName) VALUES (?, ?)";
 
         try (Connection con = db.getConnection()) {
+            // First check if it exists
             try (PreparedStatement pst = con.prepareStatement(selectSql)) {
                 pst.setString(1, apparatusName);
                 ResultSet rs = pst.executeQuery();
@@ -428,12 +431,25 @@ public class StartListDAO {
                 }
             }
 
-            try (PreparedStatement pst = con.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
-                pst.setString(1, apparatusName);
-                pst.executeUpdate();
-                ResultSet rs = pst.getGeneratedKeys();
+            // Generate new ID
+            int nextId = 1;
+            try (Statement st = con.createStatement()) {
+                ResultSet rs = st.executeQuery(maxIdSql);
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    nextId = rs.getInt(1);
+                }
+            }
+
+            // Insert new
+            try (PreparedStatement pst = con.prepareStatement(insertSql)) {
+                pst.setInt(1, nextId);
+                pst.setString(2, apparatusName);
+                int affectedRows = pst.executeUpdate();
+
+                if (affectedRows > 0) {
+                    return nextId;
+                } else {
+                    throw new SQLException("Creating apparatus failed, no rows affected.");
                 }
             }
         } catch (SQLException e) {
