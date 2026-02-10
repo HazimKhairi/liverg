@@ -165,6 +165,7 @@
                                                     </tbody>
                                                 </table>
                                             </div>
+                                            <div id="paginationControls" class="d-flex justify-content-center mt-3 gap-2"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -350,52 +351,106 @@
     <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8/dist/sweetalert2.all.min.js'></script>
 
     <script>
+        var allOrganizations = [];
+        var currentPage = 1;
+        var rowsPerPage = 6;
+
         function fetchOrganizations() {
             $.ajax({
                 type: 'GET',
                 url: '../ListOrganizationServlet',
                 dataType: 'json',
                 success: function(data) {
-                    $('#orgTableBody').empty();
-                    var rowIndex = 1;
-
-                    if (data.length === 0) {
-                        $('#orgTableBody').html('<tr><td colspan="7" class="text-center"><div style="margin: 0 auto;"><img src="sleepingcat.gif" alt="Cat Image" style="max-width: 150px;"><p style="font-family: Comic Sans MS, cursive; text-transform: uppercase;">NO ORGANIZATIONS YET</p></div></td></tr>');
-                    } else {
-                        $.each(data, function(index, org) {
-                            var statusBadge = org.orgStatus === 'active'
-                                ? '<span class="badge badge-active">Active</span>'
-                                : '<span class="badge badge-inactive">Inactive</span>';
-
-                            // Build assigned events display
-                            var eventsDisplay = '-';
-                            if (org.assignedEvents && org.assignedEvents.length > 0) {
-                                eventsDisplay = '<span class="badge bg-primary me-1">' + org.assignedEvents.length + ' event(s)</span>' +
-                                    '<button class="btn btn-sm btn-outline-primary" onclick="viewAssignedEvents(' + org.teamID + ', \'' + escapeHtml(org.teamName) + '\')" data-bs-toggle="modal" data-bs-target="#viewEventsModal"><i class="bi bi-eye"></i></button>';
-                            }
-
-                            var row = '<tr>' +
-                                '<td>' + rowIndex + '</td>' +
-                                '<td><strong>' + org.teamName + '</strong></td>' +
-                                '<td>' + (org.orgUsername || '-') + '</td>' +
-                                '<td>' + (org.orgPassword || '-') + '</td>' +
-                                '<td>' + eventsDisplay + '</td>' +
-                                '<td>' + statusBadge + '</td>' +
-                                '<td>' +
-                                    '<button class="btn btn-sm bg-gradient-success me-1" onclick="openAssignEventModal(' + org.teamID + ', \'' + escapeHtml(org.teamName) + '\')" data-bs-toggle="modal" data-bs-target="#assignEventModal" title="Assign Event"><i class="bi bi-calendar-plus"></i></button>' +
-                                    '<button class="btn btn-sm bg-gradient-info" onclick="editOrganization(' + org.teamID + ', \'' + escapeHtml(org.teamName) + '\', \'' + escapeHtml(org.orgUsername || '') + '\', \'' + escapeHtml(org.orgPassword || '') + '\', \'' + org.orgStatus + '\')" data-bs-toggle="modal" data-bs-target="#updateOrgModal" title="Edit"><i class="bi bi-pencil-fill"></i></button>' +
-                                '</td>' +
-                            '</tr>';
-
-                            $('#orgTableBody').append(row);
-                            rowIndex++;
-                        });
-                    }
+                    allOrganizations = data;
+                    renderOrganizations(data);
                 },
                 error: function(xhr, status, error) {
                     console.error("Error fetching organizations:", error);
                 }
             });
+        }
+
+        function renderOrganizations(data) {
+            $('#orgTableBody').empty();
+
+            if (data.length === 0) {
+                $('#orgTableBody').html('<tr><td colspan="7" class="text-center"><div style="margin: 0 auto;"><img src="sleepingcat.gif" alt="Cat Image" style="max-width: 150px;"><p style="font-family: Comic Sans MS, cursive; text-transform: uppercase;">NO ORGANIZATIONS YET</p></div></td></tr>');
+                $('#paginationControls').empty();
+                return;
+            }
+
+            var start = (currentPage - 1) * rowsPerPage;
+            var end = start + rowsPerPage;
+            var paginatedData = data.slice(start, end);
+
+            $.each(paginatedData, function(index, org) {
+                var statusBadge = org.orgStatus === 'active'
+                    ? '<span class="badge badge-active">Active</span>'
+                    : '<span class="badge badge-inactive">Inactive</span>';
+
+                // Build assigned events display
+                var eventsDisplay = '-';
+                if (org.assignedEvents && org.assignedEvents.length > 0) {
+                    eventsDisplay = '<span class="badge bg-primary me-1">' + org.assignedEvents.length + ' event(s)</span>' +
+                        '<button class="btn btn-sm btn-outline-primary" onclick="viewAssignedEvents(' + org.teamID + ', \'' + escapeHtml(org.teamName) + '\')" data-bs-toggle="modal" data-bs-target="#viewEventsModal"><i class="bi bi-eye"></i></button>';
+                }
+
+                var row = '<tr>' +
+                    '<td>' + (start + index + 1) + '</td>' +
+                    '<td><strong>' + org.teamName + '</strong></td>' +
+                    '<td>' + (org.orgUsername || '-') + '</td>' +
+                    '<td>' + (org.orgPassword || '-') + '</td>' +
+                    '<td>' + eventsDisplay + '</td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-sm bg-gradient-success me-1" onclick="openAssignEventModal(' + org.teamID + ', \'' + escapeHtml(org.teamName) + '\')" data-bs-toggle="modal" data-bs-target="#assignEventModal" title="Assign Event"><i class="bi bi-calendar-plus"></i></button>' +
+                        '<button class="btn btn-sm bg-gradient-info" onclick="editOrganization(' + org.teamID + ', \'' + escapeHtml(org.teamName) + '\', \'' + escapeHtml(org.orgUsername || '') + '\', \'' + escapeHtml(org.orgPassword || '') + '\', \'' + org.orgStatus + '\')" data-bs-toggle="modal" data-bs-target="#updateOrgModal" title="Edit"><i class="bi bi-pencil-fill"></i></button>' +
+                    '</td>' +
+                '</tr>';
+
+                $('#orgTableBody').append(row);
+            });
+
+            renderPagination(data.length);
+        }
+
+        function renderPagination(totalItems) {
+            var totalPages = Math.ceil(totalItems / rowsPerPage);
+            var container = $('#paginationControls');
+            container.empty();
+
+            if (totalPages <= 1) return;
+
+            // Prev Button
+            var prevBtn = $('<button>')
+                .addClass('btn btn-sm btn-light border')
+                .html('<i class="fas fa-chevron-left"></i>')
+                .prop('disabled', currentPage === 1)
+                .click(function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderOrganizations(allOrganizations);
+                    }
+                });
+            
+            // Info
+            var pageInfo = $('<span>')
+                .addClass('align-self-center mx-3 text-muted small')
+                .text('Page ' + currentPage + ' of ' + totalPages);
+
+            // Next Button
+            var nextBtn = $('<button>')
+                .addClass('btn btn-sm btn-light border')
+                .html('<i class="fas fa-chevron-right"></i>')
+                .prop('disabled', currentPage === totalPages)
+                .click(function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderOrganizations(allOrganizations);
+                    }
+                });
+
+            container.append(prevBtn, pageInfo, nextBtn);
         }
 
         function escapeHtml(text) {

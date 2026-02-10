@@ -16,11 +16,11 @@
                 href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
                 rel="stylesheet">
             <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Select2 -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <!-- Select2 -->
+            <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+            <!-- SweetAlert2 -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
             <style>
                 :root {
@@ -104,7 +104,8 @@
                     display: flex;
                     align-items: center;
                     gap: 0.5rem;
-                    pointer-events: none; /* Prevent dragging */
+                    pointer-events: none;
+                    /* Prevent dragging */
                 }
 
                 .list-group-header.main-header {
@@ -118,7 +119,7 @@
                     color: #334155;
                     padding-left: 1.5rem;
                 }
-                
+
                 .list-group-header.sub-header-2 {
                     background: #f8fafc;
                     color: #64748b;
@@ -600,42 +601,203 @@
                 }
 
                 /* SweetAlert Custom Form Styles */
-                .swal-add-form { text-align: left; }
-                .swal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #f1f5f9; }
-                .swal-header-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3); }
-                .swal-header-text h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }
-                .swal-header-text p { margin: 4px 0 0; font-size: 13px; color: #64748b; }
-                .swal-form-group { margin-bottom: 16px; }
-                .swal-form-group:last-child { margin-bottom: 0; }
-                .swal-form-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-                .swal-form-label i { color: #00d4aa; font-size: 14px; width: 16px; text-align: center; }
-                .swal-form-select, .swal-form-input { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #1e293b; background: #f8fafc; transition: all 0.2s ease; }
-                .swal-form-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
-                .swal-form-select:hover, .swal-form-input:hover { border-color: #cbd5e1; background-color: #ffffff; }
-                .swal-form-select:focus, .swal-form-input:focus { outline: none; border-color: #00d4aa; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1); }
-                .swal-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-                .swal-divider { height: 1px; background: #e2e8f0; margin: 24px 0; position: relative; }
-                .swal-divider-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 0 10px; color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-                
+                .swal-add-form {
+                    text-align: left;
+                }
+
+                .swal-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 20px;
+                    padding-bottom: 16px;
+                    border-bottom: 2px solid #f1f5f9;
+                }
+
+                .swal-header-icon {
+                    width: 48px;
+                    height: 48px;
+                    background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 20px;
+                    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+                }
+
+                .swal-header-text h3 {
+                    margin: 0;
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #1e293b;
+                }
+
+                .swal-header-text p {
+                    margin: 4px 0 0;
+                    font-size: 13px;
+                    color: #64748b;
+                }
+
+                .swal-form-group {
+                    margin-bottom: 16px;
+                }
+
+                .swal-form-group:last-child {
+                    margin-bottom: 0;
+                }
+
+                .swal-form-label {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #475569;
+                    margin-bottom: 8px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .swal-form-label i {
+                    color: #00d4aa;
+                    font-size: 14px;
+                    width: 16px;
+                    text-align: center;
+                }
+
+                .swal-form-select,
+                .swal-form-input {
+                    width: 100%;
+                    padding: 12px 14px;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    color: #1e293b;
+                    background: #f8fafc;
+                    transition: all 0.2s ease;
+                }
+
+                .swal-form-select {
+                    cursor: pointer;
+                    appearance: none;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 14px center;
+                }
+
+                .swal-form-select:hover,
+                .swal-form-input:hover {
+                    border-color: #cbd5e1;
+                    background-color: #ffffff;
+                }
+
+                .swal-form-select:focus,
+                .swal-form-input:focus {
+                    outline: none;
+                    border-color: #00d4aa;
+                    background-color: #ffffff;
+                    box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1);
+                }
+
+                .swal-form-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px;
+                }
+
+                .swal-divider {
+                    height: 1px;
+                    background: #e2e8f0;
+                    margin: 24px 0;
+                    position: relative;
+                }
+
+                .swal-divider-text {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: #fff;
+                    padding: 0 10px;
+                    color: #64748b;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+
                 /* Select2 Custom Styling to match Inputs */
-                .select2-container { width: 100% !important; text-align: left; }
-                .select2-container .select2-selection--single { height: 46px; border: 2px solid #e2e8f0; border-radius: 10px; background: #f8fafc; transition: all 0.2s ease; box-sizing: border-box; }
-                .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 42px; padding-left: 14px; color: #1e293b; font-size: 14px; }
-                .select2-container--default .select2-selection--single .select2-selection__arrow { height: 44px; right: 8px; }
-                
+                .select2-container {
+                    width: 100% !important;
+                    text-align: left;
+                }
+
+                .select2-container .select2-selection--single {
+                    height: 46px;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 10px;
+                    background: #f8fafc;
+                    transition: all 0.2s ease;
+                    box-sizing: border-box;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__rendered {
+                    line-height: 42px;
+                    padding-left: 14px;
+                    color: #1e293b;
+                    font-size: 14px;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__arrow {
+                    height: 44px;
+                    right: 8px;
+                }
+
                 /* Select2 Hover State */
-                .select2-container--default .select2-selection--single:hover { border-color: #cbd5e1; background-color: #ffffff; }
-                
+                .select2-container--default .select2-selection--single:hover {
+                    border-color: #cbd5e1;
+                    background-color: #ffffff;
+                }
+
                 /* Select2 Focus/Open State */
-                .select2-container--open .select2-selection--single, 
-                .select2-container--focus .select2-selection--single { border-color: #00d4aa !important; background-color: #ffffff !important; box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1); outline: none; }
-                
+                .select2-container--open .select2-selection--single,
+                .select2-container--focus .select2-selection--single {
+                    border-color: #00d4aa !important;
+                    background-color: #ffffff !important;
+                    box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1);
+                    outline: none;
+                }
+
                 /* Dropdown Styling */
-                .select2-dropdown { border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden; z-index: 9999; }
-                .select2-results__option { padding: 8px 14px; font-size: 14px; }
-                .select2-container--default .select2-results__option--highlighted[aria-selected] { background-color: #00d4aa; }
-                .select2-search--dropdown .select2-search__field { border-radius: 6px; border: 1px solid #e2e8f0; padding: 6px 10px; }
-                .select2-search--dropdown .select2-search__field:focus { border-color: #00d4aa; outline: none; }
+                .select2-dropdown {
+                    border: 1px solid #e2e8f0;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                    z-index: 9999;
+                }
+
+                .select2-results__option {
+                    padding: 8px 14px;
+                    font-size: 14px;
+                }
+
+                .select2-container--default .select2-results__option--highlighted[aria-selected] {
+                    background-color: #00d4aa;
+                }
+
+                .select2-search--dropdown .select2-search__field {
+                    border-radius: 6px;
+                    border: 1px solid #e2e8f0;
+                    padding: 6px 10px;
+                }
+
+                .select2-search--dropdown .select2-search__field:focus {
+                    border-color: #00d4aa;
+                    outline: none;
+                }
             </style>
         </head>
 
@@ -643,7 +805,7 @@
             <!-- Header -->
             <header class="page-header">
                 <div class="header-left">
-                    <div class="brand"><span class="live">LIVE</span><span class="rg">RG</span></div>
+                    <div class="brand"><img src="../../assets/img/liverg-logo.png" alt="LIVERG" style="height: 40px;"></div>
                     <div class="page-title">
                         <i class="fas fa-list-ol"></i>
                         Start List Management
@@ -775,10 +937,7 @@
                                     <i class="fas fa-tv"></i>
                                     Master View
                                 </a>
-                                <a href="../jury/juryAccess.jsp" class="quick-link">
-                                    <i class="fas fa-gavel"></i>
-                                    Jury Access
-                                </a>
+
                                 <a href="../../registration/eventDetails.jsp" class="quick-link">
                                     <i class="fas fa-calendar-alt"></i>
                                     Back to Events
@@ -790,8 +949,8 @@
             </div>
 
             <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
             <script>
                 $(document).ready(function () {
                     var urlParams = new URLSearchParams(window.location.search);
@@ -818,27 +977,27 @@
 
                     // Set up quick links
                     $('#linkBackend').attr('href', '../backend/techBackend.jsp?eventID=' + eventID);
-                    
-                    $('#linkMaster').on('click', function(e) {
+
+                    $('#linkMaster').on('click', function (e) {
                         e.preventDefault();
                         var params = new URLSearchParams();
                         params.set('eventID', eventID);
-                        
+
                         var day = $('#filterDay').val();
                         if (day && day !== '0') params.set('day', day);
-                        
+
                         var batch = $('#filterBatch').val();
                         if (batch && batch !== '0') params.set('batch', batch);
-                        
+
                         var category = $('#filterCategory').val();
                         if (category) params.set('category', category);
-                        
+
                         var school = $('#filterSchool').val();
                         if (school) params.set('school', school);
-                        
+
                         var apparatusID = $('#filterApparatus').val();
                         if (apparatusID && apparatusID !== '0') params.set('apparatusID', apparatusID);
-                        
+
                         window.location.href = '../master/masterView.jsp?' + params.toString();
                     });
 
@@ -981,7 +1140,7 @@
                         }
 
                         var html = '<ul class="start-list" id="sortableList">';
-                        
+
                         var lastDay = null;
                         var lastBatch = null;
                         var lastApparatus = null;
@@ -1179,7 +1338,7 @@
                                 '<p>Search existing database or create new</p>' +
                                 '</div>' +
                                 '</div>' +
-                                
+
                                 '<div class="swal-form-group">' +
                                 '<label class="swal-form-label"><i class="fas fa-medal"></i>Apparatus</label>' +
                                 '<select id="swalApparatus" class="swal-form-select">' +
@@ -1206,7 +1365,7 @@
                                 '</div>' +
                                 '</div>' +
                                 '<div class="swal-divider"><span class="swal-divider-text">Gymnast Details</span></div>' +
-                                
+
                                 // Existing Gymnast Section
                                 '<div class="swal-form-group">' +
                                 '<label class="swal-form-label"><i class="fas fa-search"></i>Select Existing Gymnast</label>' +
@@ -1222,7 +1381,7 @@
                             confirmButtonText: '<i class="fas fa-plus" style="margin-right: 6px;"></i>Add to Start List',
                             cancelButtonText: 'Cancel',
                             width: 550,
-                            didOpen: function() {
+                            didOpen: function () {
                                 // Initialize Select2 for Apparatus
                                 $('#swalApparatus').select2({
                                     dropdownParent: Swal.getContainer(),
@@ -1238,11 +1397,11 @@
                                     allowClear: true,
                                     width: '100%',
                                     language: {
-                                        noResults: function() {
+                                        noResults: function () {
                                             return "No results found. <a href='#' id='btnCreateNewFromSearch' style='color:#00d4aa; font-weight:600; cursor:pointer;'>Create New</a>";
                                         }
                                     },
-                                    escapeMarkup: function(markup) {
+                                    escapeMarkup: function (markup) {
                                         return markup;
                                     }
                                 });
@@ -1267,32 +1426,32 @@
                                         day: $('#swalDay').val(),
                                         batch: $('#swalBatch').val()
                                     };
-                                    
+
                                     // Open Create New Modal
                                     openCreateNewGymnastModal(currentSearchTerm, context);
                                 }
 
                                 // Handle "Create New" click
-                                $(document).off('mousedown', '#btnCreateNewFromSearch').on('mousedown', '#btnCreateNewFromSearch', function(e) {
+                                $(document).off('mousedown', '#btnCreateNewFromSearch').on('mousedown', '#btnCreateNewFromSearch', function (e) {
                                     e.preventDefault();
                                     // Try to grab value one last time just in case
                                     var val = $('.select2-container--open .select2-search__field').val();
-                                    if(val) currentSearchTerm = val;
-                                    
+                                    if (val) currentSearchTerm = val;
+
                                     showCreateNew();
                                 });
 
                                 // Handle Search Input & Enter Key
-                                $('#swalGymnastSelect').on('select2:open', function() {
+                                $('#swalGymnastSelect').on('select2:open', function () {
                                     var $search = $('.select2-container--open .select2-search__field');
-                                    
+
                                     // Capture search term as user types
-                                    $search.off('input.capture').on('input.capture', function() {
+                                    $search.off('input.capture').on('input.capture', function () {
                                         currentSearchTerm = $(this).val();
                                     });
 
                                     // Handle Enter key
-                                    $search.off('keydown.createNew').on('keydown.createNew', function(e) {
+                                    $search.off('keydown.createNew').on('keydown.createNew', function (e) {
                                         if (e.key === 'Enter') {
                                             // Only trigger if "Create New" link is visible (meaning no results)
                                             if ($('#btnCreateNewFromSearch').length > 0) {
@@ -1315,7 +1474,7 @@
                                 }
 
                                 var gymnastID = $('#swalGymnastSelect').val();
-                                
+
                                 if (gymnastID) {
                                     return {
                                         gymnastID: gymnastID,
@@ -1338,8 +1497,8 @@
 
                     function openCreateNewGymnastModal(name, context) {
                         // Extract unique categories and schools from allGymnasts
-                        var uniqueCategories = [...new Set(allGymnasts.map(function(g) { return g.category; }))].filter(Boolean).sort();
-                        var uniqueSchools = [...new Set(allGymnasts.map(function(g) { return g.school; }))].filter(Boolean).sort();
+                        var uniqueCategories = [...new Set(allGymnasts.map(function (g) { return g.category; }))].filter(Boolean).sort();
+                        var uniqueSchools = [...new Set(allGymnasts.map(function (g) { return g.school; }))].filter(Boolean).sort();
 
                         Swal.fire({
                             title: '',
@@ -1352,7 +1511,7 @@
                                 '<p>Enter details for new gymnast</p>' +
                                 '</div>' +
                                 '</div>' +
-                                
+
                                 '<div class="swal-form-group">' +
                                 '<label class="swal-form-label"><i class="fas fa-user-tag"></i>Name</label>' +
                                 '<input id="swalName" class="swal-form-input" placeholder="Gymnast Name" value="' + (name || '') + '">' +
@@ -1375,14 +1534,14 @@
                                 '<label class="swal-form-label"><i class="fas fa-tag"></i>Category</label>' +
                                 '<select id="swalCategory" class="swal-form-select">' +
                                 '<option value="">Select or type category...</option>' +
-                                uniqueCategories.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') +
+                                uniqueCategories.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') +
                                 '</select>' +
                                 '</div>' +
                                 '<div class="swal-form-group">' +
                                 '<label class="swal-form-label"><i class="fas fa-school"></i>School</label>' +
                                 '<select id="swalSchool" class="swal-form-select">' +
                                 '<option value="">Select or type school...</option>' +
-                                uniqueSchools.map(function(s) { return '<option value="' + s + '">' + s + '</option>'; }).join('') +
+                                uniqueSchools.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('') +
                                 '</select>' +
                                 '</div>' +
                                 '</div>' +
@@ -1393,7 +1552,7 @@
                             confirmButtonText: '<i class="fas fa-save" style="margin-right: 6px;"></i>Create Gymnast',
                             cancelButtonText: 'Back',
                             width: 550,
-                            didOpen: function() {
+                            didOpen: function () {
                                 // Initialize Select2 for Team (with tags)
                                 $('#swalTeam').select2({
                                     dropdownParent: Swal.getContainer(),
@@ -1417,8 +1576,8 @@
                                     width: '100%',
                                     tags: true
                                 });
-                                
-                                setTimeout(function() {
+
+                                setTimeout(function () {
                                     $('#swalName').focus();
                                 }, 200);
                             },
@@ -1445,7 +1604,7 @@
                         }).then(function (result) {
                             if (result.isConfirmed) {
                                 var data = result.value;
-                                
+
                                 // Create gymnast
                                 $.ajax({
                                     type: 'POST',
@@ -1460,13 +1619,13 @@
                                         apparatusID: context.apparatusID // Just for API compatibility, not used for linking here
                                     },
                                     dataType: 'json',
-                                    success: function(response) {
+                                    success: function (response) {
                                         if (response.success) {
                                             // Refresh data
                                             loadGymnasts();
                                             loadTeams(); // Reload teams in case a new one was created
-                                            
-                                            loadAllGymnasts().then(function() {
+
+                                            loadAllGymnasts().then(function () {
                                                 // Re-open original modal with new gymnast selected
                                                 context.gymnastID = response.gymnastID;
                                                 context.gymnastName = data.name; // Pass name for fallback
@@ -1480,7 +1639,7 @@
                                             });
                                         }
                                     },
-                                    error: function() {
+                                    error: function () {
                                         Swal.fire({
                                             icon: 'error',
                                             title: 'Error',
@@ -1532,10 +1691,10 @@
                     }
 
                     // Move item up
-                    window.moveItemUp = function(btn) {
+                    window.moveItemUp = function (btn) {
                         var $item = $(btn).closest('.start-list-item');
                         var $prev = $item.prev('.start-list-item');
-                        
+
                         if ($prev.length && !$item.hasClass('scored')) {
                             $item.insertBefore($prev);
                             updateOrderNumbers();
@@ -1543,10 +1702,10 @@
                     };
 
                     // Move item down
-                    window.moveItemDown = function(btn) {
+                    window.moveItemDown = function (btn) {
                         var $item = $(btn).closest('.start-list-item');
                         var $next = $item.next('.start-list-item');
-                        
+
                         if ($next.length && !$item.hasClass('scored')) {
                             $item.insertAfter($next);
                             updateOrderNumbers();

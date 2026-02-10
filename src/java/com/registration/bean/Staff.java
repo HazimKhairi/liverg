@@ -18,12 +18,12 @@ import java.util.List;
  */
 public class Staff {
 
-    //Database Connection
+    // Database Connection
     DBConnect db = new DBConnect();
     Connection con = db.getConnection();
-    //PreparedStatement
+    // PreparedStatement
     PreparedStatement pstm;
-    //ResultQuery
+    // ResultQuery
     ResultSet rs;
     String userRole = "";
 
@@ -85,9 +85,10 @@ public class Staff {
         this.staffRole = staffRole;
     }
 
-    //Staff Login Query
+    // Staff Login Query
     public boolean staffLogin(String username, String password) throws SQLException {
-        pstm = con.prepareStatement("SELECT staffID, staffPassword, staffRole FROM STAFF WHERE staffUsername = ? AND staffPassword = ?");
+        pstm = con.prepareStatement(
+                "SELECT staffID, staffPassword, staffRole FROM STAFF WHERE staffUsername = ? AND staffPassword = ?");
         pstm.setString(1, username);
         pstm.setString(2, password);
         rs = pstm.executeQuery();
@@ -100,9 +101,10 @@ public class Staff {
         return loggedIn;
     }
 
-    //Super Admin Login Query
+    // Super Admin Login Query
     public boolean superAdminLogin(String username, String password) throws SQLException {
-        pstm = con.prepareStatement("SELECT staffID, staffRole FROM STAFF WHERE staffUsername = ? AND staffPassword = ? AND staffRole = 'superadmin'");
+        pstm = con.prepareStatement(
+                "SELECT staffID, staffRole FROM STAFF WHERE staffUsername = ? AND staffPassword = ? AND staffRole = 'superadmin'");
         pstm.setString(1, username);
         pstm.setString(2, password);
         rs = pstm.executeQuery();
@@ -128,7 +130,17 @@ public class Staff {
         }
     }
 
-    //Get Staff Role
+    public void close() {
+        if (con != null) {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Get Staff Role
     public String getStaffRoleByLogin(String username, String password) throws SQLException {
         pstm = con.prepareStatement("SELECT staffRole FROM STAFF WHERE staffUsername = ? AND staffPassword = ?");
         pstm.setString(1, username);

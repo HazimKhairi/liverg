@@ -17,7 +17,7 @@ public class DBConnect {
     public DBConnect() {
     }
 
-    private String jdbcURL = "jdbc:mysql://localhost:3306/rgscoring?useSSL=false";
+    private String jdbcURL = "jdbc:mysql://localhost:3306/rgscoring?useSSL=false&serverTimezone=UTC";
     private String jdbcUsername = "root";
     private String jdbcPassword = "";
 
@@ -36,13 +36,14 @@ public class DBConnect {
     public Connection getConnection() {
         Connection con = null;
         try {
-
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("DB Connection Failed (SQL): " + e.getMessage(), e);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            throw new RuntimeException("DB Connection Failed (Driver Missing): " + e.getMessage(), e);
         }
         return con;
     }

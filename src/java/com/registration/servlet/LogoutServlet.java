@@ -10,7 +10,8 @@ import jakarta.servlet.http.HttpSession;
 
 public class LogoutServlet extends HttpServlet {
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         // Get the current session
         HttpSession session = request.getSession(false);
 
@@ -19,6 +20,6 @@ public class LogoutServlet extends HttpServlet {
             session.invalidate();
         }
 
-        response.sendRedirect("home.jsp"); 
+        response.sendRedirect("index.jsp");
     }
 }

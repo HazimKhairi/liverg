@@ -11,13 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -27,6 +21,7 @@ import org.json.simple.JSONObject;
 public class LoginServlet extends HttpServlet {
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -41,15 +36,20 @@ public class LoginServlet extends HttpServlet {
 
         JSONObject obj = new JSONObject();
 
-        Clerk clerk = new Clerk();
-        Staff staff = new Staff();
-        Team team = new Team();
-        headJudge headjudge = new headJudge();
+        Clerk clerk = null;
+        Staff staff = null;
+        Team team = null;
+        headJudge headjudge = null;
 
         String msg = "";
         String userRole = "";
 
         try {
+            clerk = new Clerk();
+            staff = new Staff();
+            team = new Team();
+            headjudge = new headJudge();
+
             int staffID = staff.StoreStaffID(username, password);
             int clerkID = clerk.StoreClerkID(username, password);
             int headjudgeID = headjudge.StoreHeadID(username, password);
@@ -68,14 +68,14 @@ public class LoginServlet extends HttpServlet {
                 obj.put("staffID", staffID);
                 obj.put("staffRole", "superadmin");
 
-            // Check for Organization login
+                // Check for Organization login
             } else if (team.orgLogin(username, password)) {
                 msg = "5";
                 userRole = "organization";
                 session.setAttribute("teamID", teamID);
                 obj.put("teamID", teamID);
 
-            // Check for regular staff login
+                // Check for regular staff login
             } else if (staff.staffLogin(username, password)) {
                 msg = "1";
                 userRole = "staff";
@@ -104,6 +104,24 @@ public class LoginServlet extends HttpServlet {
 
         } catch (SQLException ex) {
             Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(LoginServlet.class.getName()).log(Level.SEVERE, null, ex);
+            // Return error json to client so it knows something crashed
+            JSONObject err = new JSONObject();
+            err.put("msg", "error");
+            err.put("error", ex.getMessage());
+            list.add(err);
+            // Only print if not already printed? out.println might have happened.
+            // Better to rely on log.
+        } finally {
+            if (clerk != null)
+                clerk.close();
+            if (staff != null)
+                staff.close();
+            if (team != null)
+                team.close();
+            if (headjudge != null)
+                headjudge.close();
         }
     }
 }

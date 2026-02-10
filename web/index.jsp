@@ -1,573 +1,317 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - LIVERG Scoring System</title>
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
+    <!DOCTYPE html>
+    <html lang="en">
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>LIVERG - Official Rhythmic Gymnastics Scoring System</title>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap"
+            rel="stylesheet">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <!-- Bootstrap 5 (Grid Only preference, but full is fine) -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom Theme -->
-    <link rel="stylesheet" href="assets/css/liverg-theme.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <style>
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0d2840 0%, #1a3a5c 50%, #2d5a8a 100%);
-        }
+        <!-- Custom Theme -->
+        <link rel="stylesheet" href="assets/css/liverg-theme.css">
 
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .login-wrapper {
-            display: flex;
-            width: 100%;
-            max-width: 1000px;
-            background: white;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .login-image {
-            flex: 1;
-            background: linear-gradient(135deg, rgba(0, 212, 170, 0.9), rgba(233, 30, 140, 0.9)),
-                        url('registration/assets/img/curved-images/sport10.jpg');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 3rem;
-            text-align: center;
-            position: relative;
-            min-height: 500px;
-        }
-
-        .login-image::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/><circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/><circle cx="50" cy="50" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></svg>');
-            background-size: 200px;
-            opacity: 0.3;
-        }
-
-        .login-image-content {
-            position: relative;
-            z-index: 1;
-            color: white;
-        }
-
-        .login-image h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 800;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: white;
-        }
-
-        .login-image p {
-            font-size: 1.1rem;
-            opacity: 0.95;
-            max-width: 350px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        .login-form {
-            flex: 1;
-            padding: 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .login-header {
-            margin-bottom: 2rem;
-        }
-
-        .login-header .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .login-header .logo img {
-            height: 45px;
-        }
-
-        .login-header .logo-text {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .login-header h2 {
-            font-size: 1.75rem;
-            color: var(--gray-800);
-            margin-bottom: 0.5rem;
-        }
-
-        .login-header p {
-            color: var(--gray-500);
-            font-size: 0.95rem;
-        }
-
-        .form-floating {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-floating .form-control {
-            border: 2px solid var(--gray-200);
-            border-radius: 0.75rem;
-            height: 3.5rem;
-            padding: 1rem 1rem;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-floating .form-control:focus {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1);
-        }
-
-        .form-floating label {
-            padding: 1rem;
-            color: var(--gray-500);
-        }
-
-        .form-floating > .form-control:focus ~ label,
-        .form-floating > .form-control:not(:placeholder-shown) ~ label {
-            color: var(--accent-cyan);
-            transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
-        }
-
-        .input-icon {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray-400);
-            pointer-events: none;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 0.75rem;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--primary-light));
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 212, 170, 0.3);
-        }
-
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
-        .login-footer {
-            margin-top: 2rem;
-            text-align: center;
-        }
-
-        .login-footer a {
-            color: var(--accent-cyan);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .login-footer a:hover {
-            color: var(--primary-color);
-            text-decoration: underline;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 1.5rem 0;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--gray-200);
-        }
-
-        .divider span {
-            padding: 0 1rem;
-            color: var(--gray-400);
-            font-size: 0.875rem;
-        }
-
-        .social-login {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .social-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 2px solid var(--gray-200);
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: var(--gray-600);
-        }
-
-        .social-btn:hover {
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-            transform: translateY(-3px);
-        }
-
-        .back-home {
-            position: absolute;
-            top: 1.5rem;
-            left: 1.5rem;
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            transition: all 0.3s;
-            z-index: 10;
-        }
-
-        .back-home:hover {
-            color: var(--accent-cyan);
-        }
-
-        .role-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2rem;
-            font-size: 0.875rem;
-            margin-top: 1.5rem;
-            backdrop-filter: blur(10px);
-        }
-
-        @media (max-width: 768px) {
-            .login-wrapper {
-                flex-direction: column;
+        <style>
+            /* Custom Overrides for Index specific needs */
+            .hero-section-custom {
+                /* Fallback */
+                background: linear-gradient(rgba(13, 40, 64, 0.4), rgba(13, 40, 64, 0.6)), url('assets/img/hero_malaysia_v2.png') no-repeat center center/cover;
+                height: 85vh;
+                display: flex;
+                align-items: center;
+                position: relative;
             }
 
-            .login-image {
-                min-height: 250px;
-                padding: 2rem;
+            .cta-card-icon {
+                width: 80px;
+                height: 80px;
+                background: rgba(0, 212, 170, 0.1);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1.5rem;
+                color: var(--accent-cyan);
+                font-size: 2rem;
+                transition: all 0.3s;
             }
 
-            .login-image h1 {
-                font-size: 1.75rem;
+            .liverg-card:hover .cta-card-icon {
+                background: var(--accent-cyan);
+                color: white;
+                transform: scale(1.1);
             }
+        </style>
+    </head>
 
-            .login-form {
-                padding: 2rem;
-            }
-        }
+    <body>
 
-        /* Loading animation */
-        .btn-login.loading {
-            pointer-events: none;
-            opacity: 0.8;
-        }
-
-        .btn-login.loading .btn-text {
-            visibility: hidden;
-        }
-
-        .btn-login.loading::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 2px solid transparent;
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <a href="home.jsp" class="back-home">
-        <i class="fas fa-arrow-left"></i> Back to Home
-    </a>
-
-    <div class="login-container">
-        <div class="login-wrapper">
-            <!-- Left Side - Image & Branding -->
-            <div class="login-image">
-                <div class="login-image-content">
-                    <i class="fas fa-medal fa-4x mb-4" style="opacity: 0.9;"></i>
-                    <h1>LIVERG</h1>
-                    <p>Professional Rhythmic Gymnastics Scoring System. The platform where excellence meets precision.</p>
-                    <div class="role-badge">
-                        <i class="fas fa-users"></i>
-                        Staff, Judges, Admins & Organizations
-                    </div>
+        <!-- Top Bar -->
+        <div class="liverg-topbar">
+            <div class="container d-flex justify-content-between align-items-center">
+                <div class="d-none d-md-block">
+                    <span class="me-3"><i class="fas fa-envelope me-2"></i> info@liverg-scoring.com</span>
+                    <span><i class="fas fa-phone-alt me-2"></i> +60 3-8994 4800</span>
                 </div>
-            </div>
-
-            <!-- Right Side - Login Form -->
-            <div class="login-form">
-                <div class="login-header">
-                    <div class="logo">
-                        <img src="assets/img/liverg-logo.png" alt="LIVERG"
-                             onerror="this.outerHTML='<i class=\'fas fa-medal fa-2x\' style=\'color: var(--accent-cyan);\'></i>'">
-                        <span class="logo-text">LIVERG</span>
-                    </div>
-                    <h2>Welcome Back</h2>
-                    <p>Sign in to access the scoring system</p>
-                </div>
-
-                <form id="ajaxLogin">
-                    <div class="form-floating position-relative">
-                        <input type="text" class="form-control" id="username" name="username"
-                               placeholder="Username" required autocomplete="off">
-                        <label for="username"><i class="fas fa-user me-2"></i>Username</label>
-                    </div>
-
-                    <div class="form-floating position-relative">
-                        <input type="password" class="form-control" id="password" name="password"
-                               placeholder="Password" required>
-                        <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
-                        <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-2"
-                                onclick="togglePassword()" style="border: none; background: none;">
-                            <i class="fas fa-eye" id="toggleIcon"></i>
-                        </button>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="remember">
-                            <label class="form-check-label" for="remember" style="color: var(--gray-600); font-size: 0.9rem;">
-                                Remember me
-                            </label>
-                        </div>
-                        <a href="#" style="color: var(--accent-cyan); font-size: 0.9rem; text-decoration: none;">
-                            Forgot password?
-                        </a>
-                    </div>
-
-                    <button type="button" class="btn-login" onclick="login()">
-                        <span class="btn-text">
-                            <i class="fas fa-sign-in-alt"></i> Sign In
-                        </span>
-                    </button>
-                </form>
-
-                <div class="divider">
-                    <span>or continue with</span>
-                </div>
-
-                <div class="social-login">
-                    <button class="social-btn" title="Sign in with Google">
-                        <i class="fab fa-google"></i>
-                    </button>
-                    <button class="social-btn" title="Sign in with Microsoft">
-                        <i class="fab fa-microsoft"></i>
-                    </button>
-                    <button class="social-btn" title="Sign in with Apple">
-                        <i class="fab fa-apple"></i>
-                    </button>
-                </div>
-
-                <div class="login-footer">
-                    <p style="color: var(--gray-500); font-size: 0.9rem;">
-                        Need access? <a href="contact.jsp">Contact Administrator</a>
-                    </p>
-                    <p style="color: var(--gray-400); font-size: 0.8rem; margin-top: 1rem;">
-                        <a href="scoring/jury/juryAccess.jsp" style="color: var(--gray-400);">
-                            <i class="fas fa-gavel me-1"></i> Jury Access Portal
-                        </a>
-                    </p>
+                <div class="social-links ms-auto">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Scripts -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8/dist/sweetalert2.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Main Navigation -->
+        <nav class="navbar navbar-expand-lg liverg-navbar">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <img src="assets/img/liverg-logo.png" alt="LIVERG" class="brand-logo"
+                        style="height: 50px;">
+                </a>
 
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggleIcon');
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="index.jsp">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="publicEvents.jsp">Competitions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="publicDashboard.jsp">Live Scores</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="news.jsp">News</a>
+                        </li>
 
-        function login() {
-            const btn = document.querySelector('.btn-login');
-            btn.classList.add('loading');
+                    </ul>
+                    <div class="d-flex gap-2">
+                        <a href="login.jsp" class="btn btn-liverg btn-liverg-primary">
+                            <i class="fas fa-user-circle"></i> Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
 
-            var data = $("#ajaxLogin").serialize();
-            $.ajax({
-                type: 'POST',
-                url: 'LoginServlet',
-                data: data,
-                dataType: 'JSON',
-                success: function(data) {
-                    btn.classList.remove('loading');
-                    var msg = data[0].msg;
+        <!-- Hero Section -->
+        <header class="hero-section-custom">
+            <div class="container position-relative z-2">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h5 class="text-uppercase text-white mb-3" style="letter-spacing: 2px; font-weight: 600;">
+                            Official Scoring Partner</h5>
+                        <h1 class="display-3 fw-bold text-white mb-4">Precision in Every Move,<br> excellence in <span
+                                class="text-gradient"
+                                style="background: linear-gradient(90deg, #00d4aa, #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Every
+                                Score</span></h1>
+                        <p class="lead text-white-50 mb-5 w-75">
+                            The most advanced digital scoring platform for Rhythmic Gymnastics in Malaysia. Real-time
+                            accuracy, comprehensive analytics, and seamless event management.
+                        </p>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <a href="publicEvents.jsp" class="btn btn-liverg btn-liverg-primary btn-lg px-5">
+                                <i class="fas fa-calendar-alt"></i> View Events
+                            </a>
+                            <a href="publicDashboard.jsp" class="btn btn-liverg btn-light btn-lg px-5"
+                                style="border-radius: 50px;">
+                                <i class="fas fa-chart-bar text-primary"></i> Live Scores
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-                    if (msg == 1) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Welcome, Staff!",
-                            text: "Redirecting to dashboard...",
-                            timer: 1500,
-                            timerProgressBar: true,
-                            showConfirmButton: false,
-                            background: '#fff',
-                            iconColor: '#00d4aa'
-                        }).then(() => {
-                            window.location.href = "registration/dashboard.jsp";
-                        });
-                    } else if (msg == 2) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Welcome, Clerk!",
-                            text: "Redirecting to dashboard...",
-                            timer: 1500,
-                            timerProgressBar: true,
-                            showConfirmButton: false,
-                            background: '#fff',
-                            iconColor: '#00d4aa'
-                        }).then(() => {
-                            window.location.href = "registration/dashboard.jsp";
-                        });
-                    } else if (msg == 3) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Welcome, Head Judge!",
-                            text: "Redirecting to scoring system...",
-                            timer: 1500,
-                            timerProgressBar: true,
-                            showConfirmButton: false,
-                            background: '#fff',
-                            iconColor: '#00d4aa'
-                        }).then(() => {
-                            window.location.href = "Score";
-                        });
-                    } else if (msg == 4) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Welcome, Super Admin!",
-                            text: "Redirecting to dashboard...",
-                            timer: 1500,
-                            timerProgressBar: true,
-                            showConfirmButton: false,
-                            background: '#fff',
-                            iconColor: '#00d4aa'
-                        }).then(() => {
-                            window.location.href = "registration/dashboard.jsp";
-                        });
-                    } else if (msg == 5) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Welcome, Organization!",
-                            text: "Redirecting to dashboard...",
-                            timer: 1500,
-                            timerProgressBar: true,
-                            showConfirmButton: false,
-                            background: '#fff',
-                            iconColor: '#00d4aa'
-                        }).then(() => {
-                            window.location.href = "registration/dashboard.jsp";
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Login Failed",
-                            text: "Invalid username or password. Please try again.",
-                            confirmButtonColor: '#1a3a5c'
-                        });
-                    }
-                },
-                error: function() {
-                    btn.classList.remove('loading');
-                    Swal.fire({
-                        icon: "error",
-                        title: "Connection Error",
-                        text: "Unable to connect to server. Please try again.",
-                        confirmButtonColor: '#1a3a5c'
-                    });
+        <!-- Stats Section -->
+        <section class="liverg-stats">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">150+</div>
+                            <div class="stat-label">Events Managed</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">2.5k</div>
+                            <div class="stat-label">Athletes</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">99.9%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">10k+</div>
+                            <div class="stat-label">Scores Processed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main CTA Section (Commercial Feature) -->
+        <section class="liverg-section bg-white" id="features">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-label">Explore The Platform</span>
+                    <h2 class="section-title">Everything You Need</h2>
+                    <p class="section-subtitle">Whether you are a fan, an athlete, or an official, LIVERG connects you
+                        to the heartbeat of the competition.</p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Card 1: Events -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="liverg-card h-100 p-4 text-center">
+                            <div class="cta-card-icon mx-auto">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <h3>Championships</h3>
+                            <p class="text-muted mb-4">Browse upcoming national and international rhythmic gymnastics
+                                events happening in Malaysia.</p>
+                            <a href="publicEvents.jsp"
+                                class="btn btn-liverg btn-liverg-outline w-100 justify-content-center">Browse Events</a>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Player Rankings/Scores -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="liverg-card h-100 p-4 text-center"
+                            style="border: 2px solid var(--accent-cyan); transform: scale(1.05);">
+                            <div class="position-absolute top-0 end-0 bg-success text-white px-3 py-1"
+                                style="border-bottom-left-radius: 10px; font-size: 0.8rem; font-weight: bold;">LIVE
+                            </div>
+                            <div class="cta-card-icon mx-auto">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Live Scoring</h3>
+                            <p class="text-muted mb-4">Access real-time scores, judges' breakdowns, and final rankings
+                                as the action happens.</p>
+                            <a href="publicDashboard.jsp"
+                                class="btn btn-liverg btn-liverg-primary w-100 justify-content-center">View
+                                Standings</a>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Athlete Profiles -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="liverg-card h-100 p-4 text-center">
+                            <div class="cta-card-icon mx-auto">
+                                <i class="fas fa-running"></i>
+                            </div>
+                            <h3>Athlete Profiles</h3>
+                            <p class="text-muted mb-4">Discover rising stars and seasoned professionals. Track their
+                                performance history.</p>
+                            <a href="#" class="btn btn-liverg btn-liverg-outline w-100 justify-content-center">Search
+                                Athletes</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Partners / Organized By -->
+        <section class="liverg-partners py-5">
+            <div class="container">
+                <div class="text-center mb-4">
+                    <span class="text-uppercase fw-bold text-muted" style="letter-spacing: 2px;">Supported By</span>
+                </div>
+                <div class="row justify-content-center align-items-center g-5">
+                    <div class="col-6 col-md-3 text-center">
+                        <img src="assets/img/kbs.png" alt="KBS" class="img-fluid opacity-75" style="max-height: 80px; transition: all 0.3s;">
+                    </div>
+                    <div class="col-6 col-md-3 text-center">
+                         <img src="assets/img/mfg.png" alt="MFG" class="img-fluid opacity-75" style="max-height: 80px; transition: all 0.3s;">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="liverg-footer">
+            <div class="container">
+                <div class="row g-5">
+                    <div class="col-lg-4">
+                        <div class="footer-brand">
+                            <h3 class="text-white mb-3">LIVERG</h3>
+                            <p>The definitive scoring standard for Rhythmic Gymnastics. Empowering judges, engaging
+                                fans, and celebrating athletes.</p>
+                        </div>
+                        <div class="footer-social">
+                            <a href="#"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <h5 class="footer-title">Platform</h5>
+                        <ul class="footer-links">
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">Live Scores</a></li>
+                            <li><a href="#">Events Calendar</a></li>
+                            <li><a href="#">Results Archive</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-2 col-md-4">
+                        <h5 class="footer-title">Organization</h5>
+                        <ul class="footer-links">
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Technical Committee</a></li>
+                            <li><a href="#">Rules & Regulations</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 col-md-4">
+                        <h5 class="footer-title">Newsletter</h5>
+                        <p class="small text-muted mb-3">Subscribe to get the latest competition updates and news.</p>
+                        <form class="d-flex gap-2">
+                            <input type="email" class="form-control bg-dark border-secondary text-white"
+                                placeholder="Email address">
+                            <button class="btn btn-liverg-primary">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="footer-bottom text-center">
+                    <p>&copy; 2026 LIVERG Scoring System. All rights reserved. Designed for Excellence.</p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Navbar scroll effect
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 50) {
+                    document.querySelector('.liverg-navbar').classList.add('shadow-md');
+                } else {
+                    document.querySelector('.liverg-navbar').classList.remove('shadow-md');
                 }
             });
-        }
+        </script>
+    </body>
 
-        // Enter key to submit
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
-
-        document.getElementById('username').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('password').focus();
-            }
-        });
-    </script>
-</body>
-</html>
+    </html>

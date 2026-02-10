@@ -91,9 +91,65 @@ public class JurySessionApiServlet extends HttpServlet {
                         result.put("finalScore", finalScoreObj);
                     }
                 }
+
+                // Get waiting list (upcoming gymnasts)
+                List<com.scoring.bean.StartListEntry> allStartList = startListDAO.getStartList(eventID, 0, 0, 0, null,
+                        null);
+                JSONArray waitingListArray = new JSONArray();
+                int count = 0;
+                boolean foundCurrent = false;
+
+                for (com.scoring.bean.StartListEntry entry : allStartList) {
+                    // Logic: If we found current, everything after is waiting.
+                    // Or if current is null, everything unscored is waiting.
+                    // Simplified: Show unscored entries that are NOT the current one.
+
+                    boolean isCurrent = (entry.getGymnastID() == session.getGymnastID() &&
+                            entry.getApparatusID() == session.getApparatusID());
+
+                    if (isCurrent) {
+                        foundCurrent = true;
+                        continue;
+                    }
+
+                    // Add if it hasn't been scored yet (finalScore == 0) and we found current (or
+                    // current implies we passed previous?)
+                    // Actually, safer: just show unscored ones that are not current.
+                    if (entry.getFinalScore() == 0 && count < 5) {
+                        JSONObject waitingObj = new JSONObject();
+                        waitingObj.put("gymnastName", entry.getGymnastName());
+                        waitingObj.put("teamName", entry.getTeamName());
+                        waitingObj.put("apparatusName", entry.getApparatusName());
+                        waitingObj.put("category", entry.getGymnastCategory());
+                        waitingObj.put("startOrder", entry.getStartOrder());
+                        waitingListArray.add(waitingObj);
+                        count++;
+                    }
+                }
+                result.put("waitingList", waitingListArray);
+
             } else {
                 result.put("success", true);
                 result.put("sessionStatus", "NO_SESSION");
+
+                // Even with no session, show start list (first few)
+                List<com.scoring.bean.StartListEntry> allStartList = startListDAO.getStartList(eventID, 0, 0, 0, null,
+                        null);
+                JSONArray waitingListArray = new JSONArray();
+                int count = 0;
+                for (com.scoring.bean.StartListEntry entry : allStartList) {
+                    if (entry.getFinalScore() == 0 && count < 5) {
+                        JSONObject waitingObj = new JSONObject();
+                        waitingObj.put("gymnastName", entry.getGymnastName());
+                        waitingObj.put("teamName", entry.getTeamName());
+                        waitingObj.put("apparatusName", entry.getApparatusName());
+                        waitingObj.put("category", entry.getGymnastCategory());
+                        waitingObj.put("startOrder", entry.getStartOrder());
+                        waitingListArray.add(waitingObj);
+                        count++;
+                    }
+                }
+                result.put("waitingList", waitingListArray);
             }
         } else if ("getScoreForPosition".equals(action)) {
             String positionCode = request.getParameter("positionCode");

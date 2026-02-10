@@ -344,7 +344,7 @@
                       <input type="password" name="updateClerkPassword" id="updateClerkPassword" class="form-control">
                       <span class="input-group-text">
                        <i class="bi bi-eye" id="toggleUpdatePassword" style="cursor: pointer;" onclick="togglePasswordVisibility('updateClerkPassword', 'updateConfirmPassword', 'toggleUpdatePassword')"></i>
-                      </span>
+                       </span>
                      </div>
                     </div>
                     <div class="mb-3">
@@ -369,6 +369,7 @@
                </tbody>
               </table>
              </div>
+             <div id="paginationControls" class="d-flex justify-content-center mt-3 gap-2"></div>
             </div>
            </div>
           </div>
@@ -407,92 +408,127 @@
 
 
    <script>
+                     var allClerks = [];
+                     var currentPage = 1;
+                     var rowsPerPage = 6;
+
                      function fetchClerksData() {
                       $.ajax({
                        type: 'GET',
                        url: '../ListClerksServlet',
                        dataType: 'json',
                        success: function (data) {
-                        // Clear existing table content
-                        $('#clerksTableBody').empty();
-
-                        var rowIndex = 1;
-                        // Check if data is empty
-                        if (data.length === 0) {
-                         // If data is empty, display image and message
-                         $('#clerksTableBody').html('<tr><td colspan="5" class="text-center"><div style="margin: 0 auto;"><img src="sleepingcat.gif" alt="Cat Image" class="centered-image" style="max-width: 400px; max-height: 150px; width: 150px; height: auto;"><p style="font-family: Comic Sans MS, cursive; text-transform: uppercase;">CURRENTLY NO DATA</p></div></td></tr>');
-                        } else {
-                         // Iterate over received data and generate HTML for each clerk
-                         $.each(data, function (index, clerk) {
-                          // Create table row for clerk data
-                          var row = $('<tr>');
-                          // Create table cells for clerk ID, username, and password
-                          //var clerkIDCell = $('<td>').text(clerk.clerkID);
-                          var rowNumberCell = $('<td>').text(rowIndex).addClass('align-middle text-center text-sm');
-                          var clerkNameCell = $('<td>').text(clerk.clerkName);
-                          var clerkUsernameCell = $('<td>').text(clerk.clerkUsername);
-                          //var clerkPasswordCell = $('<td>').text(clerk.clerkPassword).addClass('align-middle text-center text-sm');
-
-                          // Create password cell with hidden password
-                          var passwordSpan = $('<span>').text(clerk.clerkPassword).hide().css('margin-right', '10px');
-                          ;
-
-                          var showPasswordButton = $('<button>')
-                                  .attr('class', 'btn bg-gradient-dark')
-                                  .html('<i class="bi bi-eye"></i>')
-                                  .click(function () {
-                                   if (passwordSpan.is(':visible')) {
-                                    passwordSpan.hide();
-                                    $(this).html('<i class="bi bi-eye"></i>');
-                                   } else {
-                                    passwordSpan.show();
-                                    $(this).html('<i class="bi bi-eye-slash"></i>');
-                                   }
-                                  });
-                          var clerkPasswordCell = $('<td>').addClass('align-middle text-center text-sm')
-                                  .append(passwordSpan, showPasswordButton);
-
-                          // Create edit and delete buttons
-                          var editButton = $('<button>').addClass('btn bg-gradient-dark')
-                                  .html('<i class="bi bi-file-earmark-check-fill bi-lg"></i>')
-                                  .attr('data-bs-toggle', 'modal')
-                                  .attr('data-bs-target', '#updateClerkModal')
-                                  .css('margin-right', '5px');
-
-                          var deleteButton = $('<button>').addClass('btn bg-gradient-dark')
-                                  .html('<i class="bi bi-trash2-fill"></i>')
-                                  .attr('data-bs-toggle', 'modal')
-                                  .attr('data-bs-target', '#confirmationModal');
-
-                          // Add click event handlers to buttons
-                          editButton.click(function () {
-                           console.log("Updating Clerk ID:", clerk.clerkID);
-                           displayClerk(clerk.clerkID); //Pass Parameter
-                          });
-
-                          deleteButton.click(function () {
-                           deleteClerk(clerk.clerkID); // Implement deleteClerk function
-                          });
-
-                          // Append buttons to a cell
-                          var actionCell = $('<td>').addClass('align-middle text-center text-sm').append(editButton, deleteButton);
-
-                          // Append cells to the row
-                          row.append(rowNumberCell, clerkNameCell, clerkUsernameCell, clerkPasswordCell, actionCell);
-
-                          // Append row to the table body
-                          $('#clerksTableBody').append(row);
-
-                          rowIndex++;
-                         });
-
-                        }
-
+                        allClerks = data;
+                        renderClerks(data);
                        },
                        error: function (xhr, status, error) {
                         console.error("Error occurred during AJAX request:", error);
                        }
                       });
+                     }
+
+                     function renderClerks(data) {
+                      $('#clerksTableBody').empty();
+
+                      if (data.length === 0) {
+                       $('#clerksTableBody').html('<tr><td colspan="5" class="text-center"><div style="margin: 0 auto;"><img src="sleepingcat.gif" alt="Cat Image" class="centered-image" style="max-width: 400px; max-height: 150px; width: 150px; height: auto;"><p style="font-family: Comic Sans MS, cursive; text-transform: uppercase;">CURRENTLY NO DATA</p></div></td></tr>');
+                       $('#paginationControls').empty();
+                       return;
+                      }
+
+                      var start = (currentPage - 1) * rowsPerPage;
+                      var end = start + rowsPerPage;
+                      var paginatedData = data.slice(start, end);
+
+                      $.each(paginatedData, function (index, clerk) {
+                       var row = $('<tr>');
+                       var rowNumberCell = $('<td>').text(start + index + 1).addClass('align-middle text-center text-sm');
+                       var clerkNameCell = $('<td>').text(clerk.clerkName);
+                       var clerkUsernameCell = $('<td>').text(clerk.clerkUsername);
+
+                       var passwordSpan = $('<span>').text(clerk.clerkPassword).hide().css('margin-right', '10px');
+
+                       var showPasswordButton = $('<button>')
+                               .attr('class', 'btn bg-gradient-dark')
+                               .html('<i class="bi bi-eye"></i>')
+                               .click(function () {
+                                if (passwordSpan.is(':visible')) {
+                                 passwordSpan.hide();
+                                 $(this).html('<i class="bi bi-eye"></i>');
+                                } else {
+                                 passwordSpan.show();
+                                 $(this).html('<i class="bi bi-eye-slash"></i>');
+                                }
+                               });
+                       var clerkPasswordCell = $('<td>').addClass('align-middle text-center text-sm')
+                               .append(passwordSpan, showPasswordButton);
+
+                       var editButton = $('<button>').addClass('btn bg-gradient-dark')
+                               .html('<i class="bi bi-file-earmark-check-fill bi-lg"></i>')
+                               .attr('data-bs-toggle', 'modal')
+                               .attr('data-bs-target', '#updateClerkModal')
+                               .css('margin-right', '5px');
+
+                       var deleteButton = $('<button>').addClass('btn bg-gradient-dark')
+                               .html('<i class="bi bi-trash2-fill"></i>')
+                               .attr('data-bs-toggle', 'modal')
+                               .attr('data-bs-target', '#confirmationModal');
+
+                       editButton.click(function () {
+                        console.log("Updating Clerk ID:", clerk.clerkID);
+                        displayClerk(clerk.clerkID);
+                       });
+
+                       deleteButton.click(function () {
+                        deleteClerk(clerk.clerkID);
+                       });
+
+                       var actionCell = $('<td>').addClass('align-middle text-center text-sm').append(editButton, deleteButton);
+
+                       row.append(rowNumberCell, clerkNameCell, clerkUsernameCell, clerkPasswordCell, actionCell);
+                       $('#clerksTableBody').append(row);
+                      });
+
+                      renderPagination(data.length);
+                     }
+
+                     function renderPagination(totalItems) {
+                      var totalPages = Math.ceil(totalItems / rowsPerPage);
+                      var container = $('#paginationControls');
+                      container.empty();
+
+                      if (totalPages <= 1) return;
+
+                      // Prev Button
+                      var prevBtn = $('<button>')
+                          .addClass('btn btn-sm btn-light border')
+                          .html('<i class="fas fa-chevron-left"></i>')
+                          .prop('disabled', currentPage === 1)
+                          .click(function() {
+                              if (currentPage > 1) {
+                                  currentPage--;
+                                  renderClerks(allClerks);
+                              }
+                          });
+                      
+                      // Info
+                      var pageInfo = $('<span>')
+                          .addClass('align-self-center mx-3 text-muted small')
+                          .text('Page ' + currentPage + ' of ' + totalPages);
+
+                      // Next Button
+                      var nextBtn = $('<button>')
+                          .addClass('btn btn-sm btn-light border')
+                          .html('<i class="fas fa-chevron-right"></i>')
+                          .prop('disabled', currentPage === totalPages)
+                          .click(function() {
+                              if (currentPage < totalPages) {
+                                  currentPage++;
+                                  renderClerks(allClerks);
+                              }
+                          });
+
+                      container.append(prevBtn, pageInfo, nextBtn);
                      }
                      $(document).ready(function () {
                       fetchClerksData();
